@@ -1,0 +1,49 @@
+\section{mop.\+c File Reference}
+\label{mop_8c}\index{mop.\+c@{mop.\+c}}
+
+
+Multi-\/variable orthogonal polynomials.  
+
+
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+gint {\bf mop\+\_\+number\+\_\+of\+\_\+terms} (gint dim, gint order)
+\item 
+mop\+\_\+polynomial\+\_\+t $\ast$ {\bf mop\+\_\+polynomial\+\_\+alloc} (gint np, gint dim, gint order)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+free} (mop\+\_\+polynomial\+\_\+t $\ast$p)
+\item 
+mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$ {\bf mop\+\_\+polynomial\+\_\+workspace\+\_\+alloc} (gint np, gint dim, gint order)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+workspace\+\_\+free} (mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+set\+\_\+points} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$x, gdouble $\ast$w, gint n)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+write} (mop\+\_\+polynomial\+\_\+t $\ast$p, F\+I\+L\+E $\ast$f)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+basis\+\_\+power} (mop\+\_\+polynomial\+\_\+t $\ast$p, gint order, gdouble tol, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+basis\+\_\+points} (mop\+\_\+polynomial\+\_\+t $\ast$p, gint order, gdouble tol, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+make} (mop\+\_\+polynomial\+\_\+t $\ast$p, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+write\+\_\+latex} (mop\+\_\+polynomial\+\_\+t $\ast$p, F\+I\+L\+E $\ast$f)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+normalize} (mop\+\_\+polynomial\+\_\+t $\ast$p, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+eval} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$x, gdouble $\ast$P)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+eval\+\_\+base} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$P)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Multi-\/variable orthogonal polynomials. 
+
+\begin{DoxyAuthor}{Author}
+Michael Carley 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Wed Nov 14 17\+:53\+:17 2007 
+\end{DoxyDate}

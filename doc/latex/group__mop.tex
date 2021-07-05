@@ -1,0 +1,364 @@
+\section{Multi-\/variable orthogonal polynomials}
+\label{group__mop}\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+gint {\bf mop\+\_\+number\+\_\+of\+\_\+terms} (gint dim, gint order)
+\item 
+mop\+\_\+polynomial\+\_\+t $\ast$ {\bf mop\+\_\+polynomial\+\_\+alloc} (gint np, gint dim, gint order)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+free} (mop\+\_\+polynomial\+\_\+t $\ast$p)
+\item 
+mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$ {\bf mop\+\_\+polynomial\+\_\+workspace\+\_\+alloc} (gint np, gint dim, gint order)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+workspace\+\_\+free} (mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+set\+\_\+points} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$x, gdouble $\ast$w, gint n)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+write} (mop\+\_\+polynomial\+\_\+t $\ast$p, F\+I\+L\+E $\ast$f)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+basis\+\_\+power} (mop\+\_\+polynomial\+\_\+t $\ast$p, gint order, gdouble tol, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+basis\+\_\+points} (mop\+\_\+polynomial\+\_\+t $\ast$p, gint order, gdouble tol, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+make} (mop\+\_\+polynomial\+\_\+t $\ast$p, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+write\+\_\+latex} (mop\+\_\+polynomial\+\_\+t $\ast$p, F\+I\+L\+E $\ast$f)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+normalize} (mop\+\_\+polynomial\+\_\+t $\ast$p, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+eval} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$x, gdouble $\ast$P)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+eval\+\_\+base} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$P)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+\subsection{Function Documentation}
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+number\+\_\+of\+\_\+terms@{mop\+\_\+number\+\_\+of\+\_\+terms}}
+\index{mop\+\_\+number\+\_\+of\+\_\+terms@{mop\+\_\+number\+\_\+of\+\_\+terms}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+number\+\_\+of\+\_\+terms}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+number\+\_\+of\+\_\+terms (
+\begin{DoxyParamCaption}
+\item[{gint}]{dim, }
+\item[{gint}]{order}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga1665cf7aec7b5e2a158df1ebd99e4248}
+The number of monomials required for a multi-\/variable polynomial of a given order.
+
+
+\begin{DoxyParams}{Parameters}
+{\em dim} & dimension of system; \\
+\hline
+{\em order} & order of polynomial.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+number of terms in general polynomial of order {\itshape order} in {\itshape dim} dimensions. 
+\end{DoxyReturn}
+
+
+Referenced by mop\+\_\+polynomial\+\_\+alloc(), and mop\+\_\+polynomial\+\_\+workspace\+\_\+alloc().
+
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+alloc@{mop\+\_\+polynomial\+\_\+alloc}}
+\index{mop\+\_\+polynomial\+\_\+alloc@{mop\+\_\+polynomial\+\_\+alloc}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+alloc}]{\setlength{\rightskip}{0pt plus 5cm}mop\+\_\+polynomial\+\_\+t$\ast$ mop\+\_\+polynomial\+\_\+alloc (
+\begin{DoxyParamCaption}
+\item[{gint}]{np, }
+\item[{gint}]{dim, }
+\item[{gint}]{order}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga7d44bde5f0bfc8142561ae76c02c982f}
+Allocate a \+::mop\+\_\+polynomial.
+
+
+\begin{DoxyParams}{Parameters}
+{\em np} & (maximum) number of points in basis; \\
+\hline
+{\em dim} & dimension of system; \\
+\hline
+{\em order} & maximum order of polynomial to be generated.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+pointer to new \+::mop\+\_\+polynomial. 
+\end{DoxyReturn}
+
+
+References mop\+\_\+number\+\_\+of\+\_\+terms().
+
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+basis\+\_\+points@{mop\+\_\+polynomial\+\_\+basis\+\_\+points}}
+\index{mop\+\_\+polynomial\+\_\+basis\+\_\+points@{mop\+\_\+polynomial\+\_\+basis\+\_\+points}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+basis\+\_\+points}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+basis\+\_\+points (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{gint}]{order, }
+\item[{gdouble}]{tol, }
+\item[{mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$}]{w}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga2b17aba8a840367335d1ed828a97c905}
+Generate the basis for a \+::mop\+\_\+polynomial\+\_\+t by selecting sufficient points to match the number of monomial powers supplied.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & a \+::mop\+\_\+polynomial, which should have been initialized by a call to \doxyref{mop\+\_\+polynomial\+\_\+set\+\_\+points}{p.}{group__mop_gaee472bea6a1db3f316b36e718888be49}; \\
+\hline
+{\em order} & maximum order of monomial to employed; \\
+\hline
+{\em tol} & tolerance to be used in determining rank of basis matrix; \\
+\hline
+{\em w} & suitably sized \+::mop\+\_\+polynomial\+\_\+workspace.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success 
+\end{DoxyReturn}
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+basis\+\_\+power@{mop\+\_\+polynomial\+\_\+basis\+\_\+power}}
+\index{mop\+\_\+polynomial\+\_\+basis\+\_\+power@{mop\+\_\+polynomial\+\_\+basis\+\_\+power}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+basis\+\_\+power}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+basis\+\_\+power (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{gint}]{order, }
+\item[{gdouble}]{tol, }
+\item[{mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$}]{w}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga2cdf6b5bed8f816a17537cc573591c61}
+Generate the basis for a \+::mop\+\_\+polynomial\+\_\+t by selecting sufficient monomial powers to match the number of points in the \+::mop\+\_\+polynomial, using the method of Xu, Yuan, 2004, `\+On discrete orthogonal polynomials of several variables\textquotesingle{}, Advances in Applied Mathematics, 33\+:615--632, doi\+:10.\+1016/j.aam.\+2004.\+03.\+002.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & a \+::mop\+\_\+polynomial, which should have been initialized by a call to \doxyref{mop\+\_\+polynomial\+\_\+set\+\_\+points}{p.}{group__mop_gaee472bea6a1db3f316b36e718888be49}; \\
+\hline
+{\em order} & maximum order of monomial to be employed; \\
+\hline
+{\em tol} & tolerance to be used in determining rank of basis matrix; \\
+\hline
+{\em w} & suitably sized \+::mop\+\_\+polynomial\+\_\+workspace.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success or M\+O\+P\+\_\+\+N\+O\+\_\+\+B\+A\+S\+I\+S if no basis can be generated on the points and weights supplied. 
+\end{DoxyReturn}
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+eval@{mop\+\_\+polynomial\+\_\+eval}}
+\index{mop\+\_\+polynomial\+\_\+eval@{mop\+\_\+polynomial\+\_\+eval}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+eval}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+eval (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{gdouble $\ast$}]{x, }
+\item[{gdouble $\ast$}]{P}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga6f17e9b41cc284d5c293c5cb73b9bb10}
+Evaluate a \+::mop\+\_\+polynomial\+\_\+t at a point {\itshape x}.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & \+::mop\+\_\+polynomial\+\_\+t to evaluate; \\
+\hline
+{\em x} & coordinates of evaluation point; \\
+\hline
+{\em P} & array containing values of {\itshape p} at {\itshape x}.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success. 
+\end{DoxyReturn}
+
+
+Referenced by mop\+\_\+interpolation\+\_\+weights().
+
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+eval\+\_\+base@{mop\+\_\+polynomial\+\_\+eval\+\_\+base}}
+\index{mop\+\_\+polynomial\+\_\+eval\+\_\+base@{mop\+\_\+polynomial\+\_\+eval\+\_\+base}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+eval\+\_\+base}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+eval\+\_\+base (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{gdouble $\ast$}]{P}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga2d1af99b02f7911a2dbc22200cc84e5a}
+Evaluate a \+::mop\+\_\+polynomial\+\_\+t at its base points. Note that the base points used are those in the index list of {\itshape p} and they are used in the order in that list. To connect a given value of orthogonal polynomial to a particular base point, use \+::mop\+\_\+polynomial\+\_\+index.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & \+::mop\+\_\+polynomial\+\_\+t to evaluate; \\
+\hline
+{\em P} & array of {\itshape p} evaluated at its base points so that $P_{i}(x_{j})$ is P[j$\ast$mop\+\_\+polynomial\+\_\+nterms(p)+i].\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success. 
+\end{DoxyReturn}
+
+
+Referenced by mop\+\_\+differentiation\+\_\+weights(), mop\+\_\+interpolation\+\_\+weights(), mop\+\_\+polynomial\+\_\+normalize(), and mop\+\_\+polynomial\+\_\+transform().
+
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+free@{mop\+\_\+polynomial\+\_\+free}}
+\index{mop\+\_\+polynomial\+\_\+free@{mop\+\_\+polynomial\+\_\+free}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+free}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+free (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p}
+\end{DoxyParamCaption}
+)}\label{group__mop_gaebf8ef5181e34e7ed222002739f5fb4f}
+Free a \+::mop\+\_\+polynomial\+\_\+t and associated memory
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & \+::mop\+\_\+polynomial\+\_\+t to free.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success. 
+\end{DoxyReturn}
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+make@{mop\+\_\+polynomial\+\_\+make}}
+\index{mop\+\_\+polynomial\+\_\+make@{mop\+\_\+polynomial\+\_\+make}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+make}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+make (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$}]{w}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga7c7e005b4fa69f826568641dda295498}
+Generate the discrete orthogonal polynomials associated with {\itshape p}, using the method of Xu, Yuan, 2004, `\+On discrete orthogonal polynomials of several variables\textquotesingle{}, Advances in Applied Mathematics, 33\+:615--632, doi\+:10.\+1016/j.aam.\+2004.\+03.\+002.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & a \+::mop\+\_\+polynomial, which should have been initialized by a call to \doxyref{mop\+\_\+polynomial\+\_\+basis\+\_\+power}{p.}{group__mop_ga2cdf6b5bed8f816a17537cc573591c61} or \doxyref{mop\+\_\+polynomial\+\_\+basis\+\_\+points}{p.}{group__mop_ga2b17aba8a840367335d1ed828a97c905}; \\
+\hline
+{\em w} & a suitably sized \+::mop\+\_\+polynomial\+\_\+workspace, generated by \doxyref{mop\+\_\+polynomial\+\_\+workspace\+\_\+alloc}{p.}{group__mop_ga4910a39f027e9d394e7ea1913a842593}.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success. 
+\end{DoxyReturn}
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+normalize@{mop\+\_\+polynomial\+\_\+normalize}}
+\index{mop\+\_\+polynomial\+\_\+normalize@{mop\+\_\+polynomial\+\_\+normalize}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+normalize}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+normalize (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$}]{w}
+\end{DoxyParamCaption}
+)}\label{group__mop_gada4e3cc968e6d986e19a90cd5da5c189}
+Scale the coefficients of a \+::mop\+\_\+polynomial\+\_\+t to give unit inner product, $\sum_{i}P_{j}^{2}(x_{i})w_{i}\equiv 1$.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & \+::mop\+\_\+polynomial\+\_\+t to normalize; \\
+\hline
+{\em w} & a \+::mop\+\_\+polynomial\+\_\+workspace\+\_\+t of appropriate size.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success. 
+\end{DoxyReturn}
+
+
+References mop\+\_\+polynomial\+\_\+eval\+\_\+base().
+
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+set\+\_\+points@{mop\+\_\+polynomial\+\_\+set\+\_\+points}}
+\index{mop\+\_\+polynomial\+\_\+set\+\_\+points@{mop\+\_\+polynomial\+\_\+set\+\_\+points}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+set\+\_\+points}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+set\+\_\+points (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{gdouble $\ast$}]{x, }
+\item[{gdouble $\ast$}]{w, }
+\item[{gint}]{n}
+\end{DoxyParamCaption}
+)}\label{group__mop_gaee472bea6a1db3f316b36e718888be49}
+Set points and weights to be used in generating sets of orthogonal polynomials. The data are copied into {\itshape p} so the arrays can be reused.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & a \+::mop\+\_\+polynomial\+\_\+t of appropriate size; \\
+\hline
+{\em x} & array of points of the same dimension as {\itshape p}; \\
+\hline
+{\em w} & array of weights, one for each {\itshape x}; \\
+\hline
+{\em n} & number of points.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success. 
+\end{DoxyReturn}
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+workspace\+\_\+alloc@{mop\+\_\+polynomial\+\_\+workspace\+\_\+alloc}}
+\index{mop\+\_\+polynomial\+\_\+workspace\+\_\+alloc@{mop\+\_\+polynomial\+\_\+workspace\+\_\+alloc}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+workspace\+\_\+alloc}]{\setlength{\rightskip}{0pt plus 5cm}mop\+\_\+polynomial\+\_\+workspace\+\_\+t$\ast$ mop\+\_\+polynomial\+\_\+workspace\+\_\+alloc (
+\begin{DoxyParamCaption}
+\item[{gint}]{np, }
+\item[{gint}]{dim, }
+\item[{gint}]{order}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga4910a39f027e9d394e7ea1913a842593}
+Allocate a \+::mop\+\_\+polynomial\+\_\+workspace\+\_\+t for use in generating orthogonal polynomials.
+
+
+\begin{DoxyParams}{Parameters}
+{\em np} & (maximum) number of points in basis; \\
+\hline
+{\em dim} & dimension of system; \\
+\hline
+{\em order} & maximum order of polynomial to be generated.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+pointer to new \+::mop\+\_\+polynomial\+\_\+workspace. 
+\end{DoxyReturn}
+
+
+References mop\+\_\+number\+\_\+of\+\_\+terms().
+
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+workspace\+\_\+free@{mop\+\_\+polynomial\+\_\+workspace\+\_\+free}}
+\index{mop\+\_\+polynomial\+\_\+workspace\+\_\+free@{mop\+\_\+polynomial\+\_\+workspace\+\_\+free}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+workspace\+\_\+free}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+workspace\+\_\+free (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$}]{w}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga32a8173cfa0c344a1e1ad0a326389789}
+Free a \+::mop\+\_\+polynomial\+\_\+workspace\+\_\+t and associated memory
+
+
+\begin{DoxyParams}{Parameters}
+{\em w} & \+::mop\+\_\+polynomial\+\_\+workspace\+\_\+t to free.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success. 
+\end{DoxyReturn}
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+write@{mop\+\_\+polynomial\+\_\+write}}
+\index{mop\+\_\+polynomial\+\_\+write@{mop\+\_\+polynomial\+\_\+write}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+write}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+write (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{F\+I\+L\+E $\ast$}]{f}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga6f0a66541aa24338963534faf3a3df57}
+Write a \+::mop\+\_\+polynomial\+\_\+t to a file.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & \+::mop\+\_\+polynomial\+\_\+t to write; \\
+\hline
+{\em f} & file pointer.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success. 
+\end{DoxyReturn}
+\index{Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}!mop\+\_\+polynomial\+\_\+write\+\_\+latex@{mop\+\_\+polynomial\+\_\+write\+\_\+latex}}
+\index{mop\+\_\+polynomial\+\_\+write\+\_\+latex@{mop\+\_\+polynomial\+\_\+write\+\_\+latex}!Multi-\/variable orthogonal polynomials@{Multi-\/variable orthogonal polynomials}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+write\+\_\+latex}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+write\+\_\+latex (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{F\+I\+L\+E $\ast$}]{f}
+\end{DoxyParamCaption}
+)}\label{group__mop_ga89888416576b7fa09851211ba29a5815}
+Write a \+::mop\+\_\+polynomial\+\_\+t as a fragment of La\+Te\+X code.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & \+::mop\+\_\+polynomial\+\_\+t to write; \\
+\hline
+{\em f} & file pointer to write to.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+M\+O\+P\+\_\+\+S\+U\+C\+C\+E\+S\+S on success. 
+\end{DoxyReturn}

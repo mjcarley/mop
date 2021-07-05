@@ -1,0 +1,110 @@
+#!/bin/sh
+# @configure_input@
+
+glib_libs="@glib_libs@"
+glib_cflags="@glib_cflags@"
+gsl_libs="@gsl_libs@"
+gsl_cflags="@gsl_cflags@"
+
+prefix=@prefix@
+exec_prefix=@exec_prefix@
+includedir=@includedir@
+
+usage()
+{
+	cat <<EOF
+Usage: mop-config [OPTIONS] [LIBRARIES]
+Options:
+	[--prefix[=DIR]]
+	[--exec-prefix[=DIR]]
+	[--version]
+	[--libs]
+	[--cflags]
+	[--check]
+Libraries:
+	mop
+EOF
+	exit $1
+}
+
+uniquify()
+{
+    echo $1 | awk '{
+	for (i = 1; i <= NF; i++) {
+	    unique = 1;
+	    for (j = i + 1; j <= NF && unique; j++)
+		if ($i == $j)
+		    unique = 0;
+            if (unique)
+		printf ("%s ", $i);
+	}
+    }'
+}
+
+if test $# -eq 0; then
+	usage 1 1>&2
+fi
+
+while test $# -gt 0; do
+  case "$1" in
+  -*=*) optarg=`echo "$1" | sed 's/[-_a-zA-Z0-9]*=//'` ;;
+  *) optarg= ;;
+  esac
+
+  case $1 in
+    --prefix=*)
+      prefix=$optarg
+      if test $exec_prefix_set = no ; then
+        exec_prefix=$optarg
+      fi
+      ;;
+    --prefix)
+      echo_prefix=yes
+      ;;
+    --exec-prefix=*)
+      exec_prefix=$optarg
+      exec_prefix_set=yes
+      ;;
+    --exec-prefix)
+      echo_exec_prefix=yes
+      ;;
+    --version)
+      echo @MOP_VERSION@
+      exit 0
+      ;;
+    --cflags)
+      echo_cflags=yes
+      ;;
+    --libs)
+      echo_libs=yes
+      ;;
+    --check)
+      echo_check=yes
+      ;;
+    mop)
+      lib_mop=yes
+      ;;
+    *)
+      usage 1 1>&2
+      ;;
+  esac
+  shift
+done
+
+if test "$echo_prefix" = "yes"; then
+	echo $prefix
+fi
+if test "$echo_exec_prefix" = "yes"; then
+	echo $exec_prefix
+fi
+if test "$echo_cflags" = "yes"; then
+	glib_cflags="$glib_cflags $gsl_cflags -I${prefix}/include"
+	glib_cflags=`uniquify "$glib_cflags"`
+	echo $glib_cflags
+fi
+if test "$echo_libs" = "yes"; then
+	glib_libs="-L${exec_prefix}/lib -lmop @LDFLAGS@  $glib_libs -lm"
+	glib_libs=`uniquify "$glib_libs"`
+	#echo $glib_libs @LIBS@
+	echo -L${exec_prefix}/lib -lmop @LIBS@
+fi

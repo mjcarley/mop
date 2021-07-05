@@ -1,0 +1,39 @@
+\section{Logging functions}
+\label{group__logging}\index{Logging functions@{Logging functions}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+gint {\bf mop\+\_\+logging\+\_\+init} (F\+I\+L\+E $\ast$f, gchar $\ast$p, G\+Log\+Level\+Flags log\+\_\+level, gpointer exit\+\_\+func)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+\subsection{Function Documentation}
+\index{Logging functions@{Logging functions}!mop\+\_\+logging\+\_\+init@{mop\+\_\+logging\+\_\+init}}
+\index{mop\+\_\+logging\+\_\+init@{mop\+\_\+logging\+\_\+init}!Logging functions@{Logging functions}}
+\subsubsection[{mop\+\_\+logging\+\_\+init}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+logging\+\_\+init (
+\begin{DoxyParamCaption}
+\item[{F\+I\+L\+E $\ast$}]{f, }
+\item[{gchar $\ast$}]{p, }
+\item[{G\+Log\+Level\+Flags}]{log\+\_\+level, }
+\item[{gpointer}]{exit\+\_\+func}
+\end{DoxyParamCaption}
+)}\label{group__logging_gab59bcc63ef0ecd72efc9ec20d872760a}
+Initialize M\+O\+P logging
+
+
+\begin{DoxyParams}{Parameters}
+{\em f} & file stream for messages \\
+\hline
+{\em p} & string to prepend to messages \\
+\hline
+{\em log\+\_\+level} & maximum logging level to handle (see g\+\_\+log) \\
+\hline
+{\em exit\+\_\+func} & function to call if exiting on an error\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success 
+\end{DoxyReturn}

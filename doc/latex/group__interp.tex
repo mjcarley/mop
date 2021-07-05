@@ -1,0 +1,176 @@
+\section{Interpolation and differentiation}
+\label{group__interp}\index{Interpolation and differentiation@{Interpolation and differentiation}}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+transform} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$f, gint n, gdouble $\ast$c, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+interpolate} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$c, gint n, gdouble $\ast$x, gdouble $\ast$f)
+\item 
+gint {\bf mop\+\_\+interpolation\+\_\+weights} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$x, gdouble $\ast$v, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+differentiate} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$x, gint $\ast$d, gdouble $\ast$P)
+\item 
+gint {\bf mop\+\_\+differentiation\+\_\+weights} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$x, gint $\ast$d, gdouble $\ast$v, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+
+
+\subsection{Function Documentation}
+\index{Interpolation and differentiation@{Interpolation and differentiation}!mop\+\_\+differentiation\+\_\+weights@{mop\+\_\+differentiation\+\_\+weights}}
+\index{mop\+\_\+differentiation\+\_\+weights@{mop\+\_\+differentiation\+\_\+weights}!Interpolation and differentiation@{Interpolation and differentiation}}
+\subsubsection[{mop\+\_\+differentiation\+\_\+weights}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+differentiation\+\_\+weights (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{gdouble $\ast$}]{x, }
+\item[{gint $\ast$}]{d, }
+\item[{gdouble $\ast$}]{v, }
+\item[{mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$}]{w}
+\end{DoxyParamCaption}
+)}\label{group__interp_ga4a9b714c57837a00dec0be6089610436}
+Compute the weights for direct differentiation at a point, based on values at the base points of a system of orthogonal polynomials, so that $\partial^{d_{1}+d_{2}+\dots}f(\mathbf{x})/\partial x_{1}^{d_{1}}x_{2}^{d_{2}}\dots\approx\sum v_{i}f_{i}$. Remember to use \+::mop\+\_\+polynomial\+\_\+index to map base points to real points.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & a \+::mop\+\_\+polynomial; \\
+\hline
+{\em x} & interpolation point; \\
+\hline
+{\em d} & array of derivative orders; \\
+\hline
+{\em v} & differentiation weights; \\
+\hline
+{\em w} & a suitably sized \+::mop\+\_\+polynomial\+\_\+workspace.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success. 
+\end{DoxyReturn}
+
+
+References mop\+\_\+polynomial\+\_\+differentiate(), and mop\+\_\+polynomial\+\_\+eval\+\_\+base().
+
+\index{Interpolation and differentiation@{Interpolation and differentiation}!mop\+\_\+interpolate@{mop\+\_\+interpolate}}
+\index{mop\+\_\+interpolate@{mop\+\_\+interpolate}!Interpolation and differentiation@{Interpolation and differentiation}}
+\subsubsection[{mop\+\_\+interpolate}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+interpolate (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{gdouble $\ast$}]{c, }
+\item[{gint}]{n, }
+\item[{gdouble $\ast$}]{x, }
+\item[{gdouble $\ast$}]{f}
+\end{DoxyParamCaption}
+)}\label{group__interp_gacf4c268326956401d0d90b88ddf3d276}
+Evaluate a function expanded in orthogonal polynomials, $f\approx\sum_{i}c_{i}P_{i}(\mathbf{x})$.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & \+::mop\+\_\+polynomial\+\_\+t for the expansion; \\
+\hline
+{\em c} & coefficients of the expansion, from \doxyref{mop\+\_\+polynomial\+\_\+transform}{p.}{group__interp_gad6525004874453cc7fbd31aa8392d589}; \\
+\hline
+{\em n} & number of function values, as in \doxyref{mop\+\_\+polynomial\+\_\+transform}{p.}{group__interp_gad6525004874453cc7fbd31aa8392d589}; \\
+\hline
+{\em x} & coordinates of evaluation point; \\
+\hline
+{\em f} & value(s) of function(s).\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success. 
+\end{DoxyReturn}
+\index{Interpolation and differentiation@{Interpolation and differentiation}!mop\+\_\+interpolation\+\_\+weights@{mop\+\_\+interpolation\+\_\+weights}}
+\index{mop\+\_\+interpolation\+\_\+weights@{mop\+\_\+interpolation\+\_\+weights}!Interpolation and differentiation@{Interpolation and differentiation}}
+\subsubsection[{mop\+\_\+interpolation\+\_\+weights}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+interpolation\+\_\+weights (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{gdouble $\ast$}]{x, }
+\item[{gdouble $\ast$}]{v, }
+\item[{mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$}]{w}
+\end{DoxyParamCaption}
+)}\label{group__interp_ga0cce0fb06d0b4437418de002c158393c}
+Compute the weights for direct interpolation at a point, based on values at the base points of a system of orthogonal polynomials, so that $f(\mathbf{x})\approx\sum v_{i}f_{i}$. Remember to use \+::mop\+\_\+polynomial\+\_\+index to map base points to real points.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & a \+::mop\+\_\+polynomial; \\
+\hline
+{\em x} & interpolation point; \\
+\hline
+{\em v} & interpolation weights; \\
+\hline
+{\em w} & a suitably sized \+::mop\+\_\+polynomial\+\_\+workspace.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success. 
+\end{DoxyReturn}
+
+
+References mop\+\_\+polynomial\+\_\+eval(), and mop\+\_\+polynomial\+\_\+eval\+\_\+base().
+
+\index{Interpolation and differentiation@{Interpolation and differentiation}!mop\+\_\+polynomial\+\_\+differentiate@{mop\+\_\+polynomial\+\_\+differentiate}}
+\index{mop\+\_\+polynomial\+\_\+differentiate@{mop\+\_\+polynomial\+\_\+differentiate}!Interpolation and differentiation@{Interpolation and differentiation}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+differentiate}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+differentiate (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{gdouble $\ast$}]{x, }
+\item[{gint $\ast$}]{d, }
+\item[{gdouble $\ast$}]{P}
+\end{DoxyParamCaption}
+)}\label{group__interp_ga5c7dc57391dc02152573121da0d5b03e}
+Evaluate derivatives of a \+::mop\+\_\+polynomial\+\_\+t at a point {\itshape x}.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & \+::mop\+\_\+polynomial\+\_\+t to evaluate; \\
+\hline
+{\em x} & coordinates of evaluation point; \\
+\hline
+{\em d} & orders of differentiation for each dimension; \\
+\hline
+{\em P} & array containing values of $\partial^{d_{1}+d_{2}+\dots}P(\mathbf{x})/\partial x_{1}^{d_{1}}x_{2}^{d_{2}}\dots$ at {\itshape x}.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success. 
+\end{DoxyReturn}
+
+
+Referenced by mop\+\_\+differentiation\+\_\+weights().
+
+\index{Interpolation and differentiation@{Interpolation and differentiation}!mop\+\_\+polynomial\+\_\+transform@{mop\+\_\+polynomial\+\_\+transform}}
+\index{mop\+\_\+polynomial\+\_\+transform@{mop\+\_\+polynomial\+\_\+transform}!Interpolation and differentiation@{Interpolation and differentiation}}
+\subsubsection[{mop\+\_\+polynomial\+\_\+transform}]{\setlength{\rightskip}{0pt plus 5cm}gint mop\+\_\+polynomial\+\_\+transform (
+\begin{DoxyParamCaption}
+\item[{mop\+\_\+polynomial\+\_\+t $\ast$}]{p, }
+\item[{gdouble $\ast$}]{f, }
+\item[{gint}]{n, }
+\item[{gdouble $\ast$}]{c, }
+\item[{mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$}]{w}
+\end{DoxyParamCaption}
+)}\label{group__interp_gad6525004874453cc7fbd31aa8392d589}
+Calculate the coefficients of an expansion of a function {\itshape f} in the polynomial {\itshape p}.
+
+
+\begin{DoxyParams}{Parameters}
+{\em p} & \+::mop\+\_\+polynomial\+\_\+t for the expansion; \\
+\hline
+{\em f} & value(s) of function(s) at base points of {\itshape p}; \\
+\hline
+{\em n} & number of values of $f$ at each base point; \\
+\hline
+{\em c} & coefficients of expansion, $f\approx\sum_{i}c_{i}P_{i}(\mathbf{x})$; \\
+\hline
+{\em w} & a \+::mop\+\_\+polynomial\+\_\+workspace\+\_\+t of appropriate size.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+0 on success. 
+\end{DoxyReturn}
+
+
+References mop\+\_\+polynomial\+\_\+eval\+\_\+base().
+

@@ -1,0 +1,7 @@
+\form#0:$f$
+\form#1:$f\approx\sum_{i}c_{i}P_{i}(\mathbf{x})$
+\form#2:$f(\mathbf{x})\approx\sum v_{i}f_{i}$
+\form#3:$\partial^{d_{1}+d_{2}+\dots}P(\mathbf{x})/\partial x_{1}^{d_{1}}x_{2}^{d_{2}}\dots$
+\form#4:$\partial^{d_{1}+d_{2}+\dots}f(\mathbf{x})/\partial x_{1}^{d_{1}}x_{2}^{d_{2}}\dots\approx\sum v_{i}f_{i}$
+\form#5:$\sum_{i}P_{j}^{2}(x_{i})w_{i}\equiv 1$
+\form#6:$P_{i}(x_{j})$

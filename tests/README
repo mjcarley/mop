@@ -1,0 +1,5 @@
+A simple test to generate the data of Xu, Yuan, 2004, `On discrete
+orthogonal polynomials of several variables', Advances in Applied
+Mathematics, 33:615--632, doi:10.1016/j.aam.2004.03.002
+
+./mop-test < xu2d.dat

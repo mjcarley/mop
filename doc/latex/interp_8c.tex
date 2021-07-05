@@ -1,0 +1,31 @@
+\section{interp.\+c File Reference}
+\label{interp_8c}\index{interp.\+c@{interp.\+c}}
+
+
+Interpolation and differentiation using multi-\/variable orthogonal polynomials.  
+
+
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+transform} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$f, gint n, gdouble $\ast$c, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+interpolate} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$c, gint n, gdouble $\ast$x, gdouble $\ast$f)
+\item 
+gint {\bf mop\+\_\+interpolation\+\_\+weights} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$x, gdouble $\ast$v, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\item 
+gint {\bf mop\+\_\+polynomial\+\_\+differentiate} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$x, gint $\ast$d, gdouble $\ast$P)
+\item 
+gint {\bf mop\+\_\+differentiation\+\_\+weights} (mop\+\_\+polynomial\+\_\+t $\ast$p, gdouble $\ast$x, gint $\ast$d, gdouble $\ast$v, mop\+\_\+polynomial\+\_\+workspace\+\_\+t $\ast$w)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Interpolation and differentiation using multi-\/variable orthogonal polynomials. 
+
+\begin{DoxyAuthor}{Author}
+Michael Carley 
+\end{DoxyAuthor}
+\begin{DoxyDate}{Date}
+Wed Nov 14 17\+:53\+:17 2007 
+\end{DoxyDate}
