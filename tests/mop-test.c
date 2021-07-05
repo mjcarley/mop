@@ -1,6 +1,6 @@
 /* mop-test.c
  * 
- * Copyright (C) 2007 Michael Carley
+ * Copyright (C) 2007, 2021 Michael Carley
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -207,7 +207,7 @@ gint main(gint argc, gchar **argv)
     mop_differentiation_weights(p, y, d, c, w) ;
     
     for ( j = 0 ; j < nf ; j ++ ) g[j] = 0.0 ;
-    for ( j = 0 ; j < mop_polynomial_nterms(p) ; j ++ ) {
+    for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {
       k = mop_polynomial_index(p,j) ;
       g[0] += c[j]*f[k*nf+0] ;
     }

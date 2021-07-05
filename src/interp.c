@@ -1,6 +1,6 @@
 /* interp.c
  * 
- * Copyright (C) 2007 Michael Carley
+ * Copyright (C) 2007, 2021 Michael Carley
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -68,16 +68,16 @@ gint mop_polynomial_transform(mop_polynomial_t *p, gdouble *f, gint n,
 
   mop_polynomial_eval_base(p, ws) ;
 
-  for ( i = 0 ; i < mop_polynomial_nterms(p)*n ; i ++ ) c[i] = 0.0 ;
+  for ( i = 0 ; i < mop_polynomial_term_number(p)*n ; i ++ ) c[i] = 0.0 ;
   
-  for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
-    for ( m = 0 ; m < mop_polynomial_nterms(p) ; m ++ ) {
+  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
+    for ( m = 0 ; m < mop_polynomial_term_number(p) ; m ++ ) {
       j = mop_polynomial_index(p,m) ;
       for ( k = 0 ; k < n ; k ++ ) {
-	if ( isnan(c[i*n+k] += f[j*n+k]*ws[m*mop_polynomial_nterms(p)+i]*
+	if ( isnan(c[i*n+k] += f[j*n+k]*ws[m*mop_polynomial_term_number(p)+i]*
 	  mop_polynomial_weight(p,j)) ) 
-	g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	      "%s: NaN error at i=%d, j=%d, k=%d", __FUNCTION__, i, j, k) ;
+	  g_error("%s: NaN error at i=%d, j=%d, k=%d",
+		  __FUNCTION__, i, j, k) ;
       }      
     }
   }  
@@ -113,8 +113,8 @@ gint mop_interpolate(mop_polynomial_t *p, gdouble *c, gint n,
   
   for ( j = 0 ; j < n ; j ++ ) f[j] = 0.0 ;
 
-  for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
-    for ( (P = 0.0), (j = 0) ; j < mop_polynomial_nterms(p) ; j ++ )
+  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
+    for ( (P = 0.0), (j = 0) ; j < mop_polynomial_term_number(p) ; j ++ )
       P += mop_polynomial_coefficient(p,i,j)*
 	block_multipower(p->xp, 0, 1, 
 			 mop_polynomial_dimension(p),
@@ -148,15 +148,15 @@ gint mop_interpolation_weights(mop_polynomial_t *p,
   gdouble *P, *Px ;
   gint i, j, n ;
 
-  n = mop_polynomial_nterms(p) ;
+  n = mop_polynomial_term_number(p) ;
   P = w->block ; Px = &(w->block[n*n]) ;
 
   mop_polynomial_eval(p, x, Px) ;
   mop_polynomial_eval_base(p, P) ;
 
-  for ( j = 0 ; j < mop_polynomial_nterms(p) ; j ++ ) {    
-    for ( (v[j] = 0.0), (i = 0) ; i < mop_polynomial_nterms(p) ; i ++ )
-      v[j] += Px[i]*P[j*mop_polynomial_nterms(p)+i] ;
+  for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {    
+    for ( (v[j] = 0.0), (i = 0) ; i < mop_polynomial_term_number(p) ; i ++ )
+      v[j] += Px[i]*P[j*mop_polynomial_term_number(p)+i] ;
     v[j] *= mop_polynomial_weight(p,mop_polynomial_index(p,j)) ;
   }
   
@@ -187,8 +187,8 @@ gint mop_polynomial_differentiate(mop_polynomial_t *p, gdouble *x,
 		    mop_polynomial_order(p),
 		    d, p->xp) ;
   
-  for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ )
-    for ( (P[i] = 0.0), (j = 0) ; j < mop_polynomial_nterms(p) ; j ++ )
+  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ )
+    for ( (P[i] = 0.0), (j = 0) ; j < mop_polynomial_term_number(p) ; j ++ )
       P[i] += mop_polynomial_coefficient(p,i,j)*
 	block_multipower(p->xp, 0, 1, 
 			 mop_polynomial_dimension(p),
@@ -223,15 +223,15 @@ gint mop_differentiation_weights(mop_polynomial_t *p,
   gdouble *P, *Px, scp ;
   gint i, j, k, n ;
 
-  n = mop_polynomial_npts(p) ;
+  n = mop_polynomial_point_number(p) ;
   P = w->block ; Px = &(w->block[n*n]) ;
 
   mop_polynomial_eval_base(p, P) ;
   mop_polynomial_differentiate(p, x, d, Px) ;
 
-  for ( j = 0 ; j < mop_polynomial_nterms(p) ; j ++ ) {    
-    for ( (v[j] = 0.0), (i = 0) ; i < mop_polynomial_nterms(p) ; i ++ )
-      v[j] += Px[i]*P[j*mop_polynomial_nterms(p)+i] ;
+  for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {    
+    for ( (v[j] = 0.0), (i = 0) ; i < mop_polynomial_term_number(p) ; i ++ )
+      v[j] += Px[i]*P[j*mop_polynomial_term_number(p)+i] ;
     k = mop_polynomial_index(p,j) ;
     v[j] *= mop_polynomial_weight(p,k) ;
   }
@@ -240,7 +240,7 @@ gint mop_differentiation_weights(mop_polynomial_t *p,
     for ( j = 0 ; j < d[i] ; j ++ ) scp *= p->sc ;
   }
 
-  for ( j = 0 ; j < mop_polynomial_nterms(p) ; j ++ ) v[j] *= scp ;
+  for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) v[j] *= scp ;
 
   return 0 ;
 }

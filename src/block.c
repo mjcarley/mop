@@ -1,6 +1,6 @@
-/* interp.c
+/* block.c
  * 
- * Copyright (C) 2007 Michael Carley
+ * Copyright (C) 2007, 2021 Michael Carley
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,8 +50,7 @@ gint block_powers(gdouble *x, gint n, gint dim,
   for ( i = 1 ; i <= pmax ; i ++ )
     for ( j = 0 ; j < n*dim ; j ++ ) 
       if ( isnan(xp[i*n*dim+j] = x[j]*xp[(i-1)*n*dim+j]) )
-	g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	      "%s: NaN error at i=%d, j=%d", __FUNCTION__, i, j) ;
+	g_error("%s: NaN error at i=%d, j=%d", __FUNCTION__, i, j) ;
 
   return 0 ;
 }
@@ -74,9 +73,8 @@ gint block_derivatives(gdouble *x, gint n,
       for ( k = 0 ; k < n ; k ++ )
 	if ( isnan(xp[j*n*dim+k*dim+i] = 
 		   xp[(j-1)*n*dim+k*dim+i]*x[k*dim+i]) )
-	  g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		"%s: NaN error at i=%d, j=%d, k=%d", 
-		__FUNCTION__, i, j, k) ;
+	  g_error("%s: NaN error at i=%d, j=%d, k=%d", 
+		  __FUNCTION__, i, j, k) ;
     }
   }
 

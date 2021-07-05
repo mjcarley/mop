@@ -1,6 +1,6 @@
 /* mop.c
  * 
- * Copyright (C) 2007 Michael Carley
+ * Copyright (C) 2007, 2021 Michael Carley
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,17 +69,14 @@ static gint sds_decomp(gsl_matrix *A, gsl_matrix *S, gsl_vector *D,
   gint i, j, k, m, n ;
 
   if ( A->size1 != S->size1 || A->size2 != S->size2 ) 
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: matrices A (%lux%lu) and S (%lux%lu) not the same size",
+    g_error("%s: matrices A (%lux%lu) and S (%lux%lu) not the same size",
 	  __FUNCTION__, A->size1, A->size2, S->size1, S->size2) ;
   if ( A->size1 != A->size2 )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: matrix A (%lux%lu) must be square",
-	  __FUNCTION__, A->size1, A->size2) ;
+    g_error("%s: matrix A (%lux%lu) must be square",
+	    __FUNCTION__, A->size1, A->size2) ;
   
   if ( D->size != A->size1 ) 
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: vector D (%lu) must have as many rows as matrix A (%lux%lu)",
+    g_error("%s: vector D (%lu) must have as many rows as matrix A (%lux%lu)",
 	  __FUNCTION__, D->size, A->size1, A->size2) ;
 
   n = A->size1 ;
@@ -88,25 +85,24 @@ static gint sds_decomp(gsl_matrix *A, gsl_matrix *S, gsl_vector *D,
   gsl_matrix_set_zero(S) ;
 
   for ( j = 0 ; j < n ; j ++ ) {
-    for ( i = 0 ; i <= j-1 ; i ++ )
+    for ( i = 0 ; i <= j-1 ; i ++ ) {
 #ifdef SDS_TRANSPOSE_S
       gsl_vector_set(v, i, gsl_matrix_get(S, i, j)*gsl_vector_get(D, i)) ;
 #else
       gsl_vector_set(v, i, gsl_matrix_get(S, j, i)*gsl_vector_get(D, i)) ;
 #endif /*SDS_TRANSPOSE_S*/
-
-    for ( (tmp = gsl_matrix_get(A, j, j)), (k = 0) ; k <= j-1 ; k ++ ) 
+    }
+    for ( (tmp = gsl_matrix_get(A, j, j)), (k = 0) ; k <= j-1 ; k ++ ) {
 #ifdef SDS_TRANSPOSE_S
       tmp -= gsl_matrix_get(S, k, j)*gsl_vector_get(v,k) ;
 #else
-    tmp -= gsl_matrix_get(S, j, k)*gsl_vector_get(v,k) ;
+      tmp -= gsl_matrix_get(S, j, k)*gsl_vector_get(v,k) ;
 #endif /*SDS_TRANSPOSE_S*/
+    }
     if ( isnan(tmp) ) 
-      g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	    "%s: NaN error at j=%d", __FUNCTION__, j) ;
+      g_error("%s: NaN error at j=%d", __FUNCTION__, j) ;
     if ( tmp <= 0.0 ) {
-      g_log(G_LOG_DOMAIN, G_LOG_LEVEL_WARNING,
-	    "%s: D_j=%lg out of range at j=%d", __FUNCTION__, tmp, j) ;
+      g_warning("%s: D_j=%lg out of range at j=%d", __FUNCTION__, tmp, j) ;
       return MOP_FAILURE ;
     }
     gsl_vector_set(v, j, tmp) ; gsl_vector_set(D, j, tmp) ;
@@ -119,9 +115,7 @@ static gint sds_decomp(gsl_matrix *A, gsl_matrix *S, gsl_vector *D,
  	tmp -= gsl_matrix_get(S, m, k)*gsl_vector_get(v, k) ;
 #endif /*SDS_TRANSPOSE_S*/
 	if ( isnan(tmp) ) 
-	  g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		"%s: NaN error at i=%d, j=%d, m=%d", 
-		__FUNCTION__, i, j, m) ;	
+	  g_error("%s: NaN error at i=%d, j=%d, m=%d", __FUNCTION__, i, j, m) ;	
       }
 
 #ifdef SDS_TRANSPOSE_S
@@ -130,8 +124,7 @@ static gint sds_decomp(gsl_matrix *A, gsl_matrix *S, gsl_vector *D,
       gsl_matrix_set(S, m, j, tmp/gsl_vector_get(v, j)) ;
 #endif /*SDS_TRANSPOSE_S*/
       if ( isnan(tmp/gsl_vector_get(v, j)) ) 
-	g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		"%s: NaN error at j=%d, m=%d, v_j=%lg", 
+	g_error("%s: NaN error at j=%d, m=%d, v_j=%lg", 
 		__FUNCTION__, j, m, gsl_vector_get(v, j)) ;	
     }
   }
@@ -170,8 +163,7 @@ static gint make_index_list(gint n, gint m, gint *id, gint *ni)
   gint i, j, p ;
 
   if ( m <= 0 || m > 3 ) 
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: m=%d out of range, 0 < m <= 3", __FUNCTION__, m) ;
+    g_error("%s: m=%d out of range, 0 < m <= 3", __FUNCTION__, m) ;
 
   switch ( m ) {
   case 1:
@@ -230,9 +222,7 @@ gint mop_number_of_terms(gint dim, gint order)
   default: break ;
   }
 
-  g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	"%s: dimension %d is currently unsupported", 
-	__FUNCTION__, dim) ;
+  g_error("%s: dimension %d is currently unsupported", __FUNCTION__, dim) ;
   
   return MOP_SUCCESS ;
 }
@@ -253,36 +243,35 @@ mop_polynomial_t *mop_polynomial_alloc(gint np, gint dim, gint order)
   mop_polynomial_t *p ;
 
   if ( (dim < 1) || ( dim > 3) ) 
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: dimension %d is currently unsupported (sorry)", 
+    g_error("%s: dimension %d is currently unsupported (sorry)", 
 	  __FUNCTION__, dim) ;
 
   p = (mop_polynomial_t *)g_malloc(sizeof(mop_polynomial_t)) ;
 
   mop_polynomial_dimension(p) = dim ;
-  mop_polynomial_npts(p) = 0 ;
-  mop_polynomial_npts_max(p) = np ;
+  mop_polynomial_point_number(p) = 0 ;
+  mop_polynomial_point_number_max(p) = np ;
   mop_polynomial_order(p) = -1 ;
   mop_polynomial_order_max(p) = order ;
-  mop_polynomial_nterms(p) = 0 ;
-  mop_polynomial_nterms_max(p) = mop_number_of_terms(dim, order) ;
+  mop_polynomial_term_number(p) = 0 ;
+  mop_polynomial_term_number_max(p) = mop_number_of_terms(dim, order) ;
 
   mop_polynomial_powers(p) = (gint *)g_malloc(mop_polynomial_dimension(p)*
-					      mop_polynomial_nterms_max(p)*
+					      mop_polynomial_term_number_max(p)*
 					      sizeof(gint)) ;
   mop_polynomial_indices(p) = 
-    (gint *)g_malloc(mop_polynomial_npts_max(p)*sizeof(gint)) ;
+    (gint *)g_malloc(mop_polynomial_point_number_max(p)*sizeof(gint)) ;
 
   mop_polynomial_points(p) = 
-    (gdouble *)g_malloc(mop_polynomial_npts_max(p)*
+    (gdouble *)g_malloc(mop_polynomial_point_number_max(p)*
 			mop_polynomial_dimension(p)*sizeof(gdouble)) ;
   mop_polynomial_weights(p) = 
-    (gdouble *)g_malloc(mop_polynomial_npts_max(p)*sizeof(gdouble)) ;
-  p->R = (gdouble *)g_malloc((mop_polynomial_npts_max(p)*
-			      mop_polynomial_nterms_max(p))*
+    (gdouble *)g_malloc(mop_polynomial_point_number_max(p)*sizeof(gdouble)) ;
+  p->R = (gdouble *)g_malloc((mop_polynomial_point_number_max(p)*
+			      mop_polynomial_term_number_max(p))*
 			     sizeof(gdouble)) ;
-  p->xp = (gdouble *)g_malloc(mop_polynomial_npts_max(p)*
-			      mop_polynomial_nterms_max(p)*
+  p->xp = (gdouble *)g_malloc(mop_polynomial_point_number_max(p)*
+			      mop_polynomial_term_number_max(p)*
 			      mop_polynomial_dimension(p)*
 			      sizeof(gdouble)) ;
   p->sc = 1.0 ;
@@ -369,7 +358,7 @@ gint mop_polynomial_workspace_free(mop_polynomial_workspace_t *w)
 /** 
  * Set points and weights to be used in generating sets of orthogonal
  * polynomials. The data are copied into \a p so the arrays can be
- * reused.
+ * reused. If \a w is NULL, unit weights are used.
  * 
  * @param p a ::mop_polynomial_t of appropriate size;
  * @param x array of points of the same dimension as \a p;
@@ -385,24 +374,22 @@ gint mop_polynomial_set_points(mop_polynomial_t *p,
 {
   gint i ;
 
-  if ( mop_polynomial_npts_max(p) < n )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: too many points (%d) for polynomial "
-	  "(maximum number of points %d)", __FUNCTION__, 
-	  n, mop_polynomial_npts_max(p)) ;
+  if ( mop_polynomial_point_number_max(p) < n )
+    g_error("%s: too many points (%d) for polynomial "
+	    "(maximum number of points %d)", __FUNCTION__, 
+	    n, mop_polynomial_point_number_max(p)) ;
 
   g_memmove(mop_polynomial_points(p), x, 
 	    n*mop_polynomial_dimension(p)*sizeof(gdouble)) ;
   if ( w != NULL ) {
     for ( i = 0 ; i < n ; i ++ )
       if ( (mop_polynomial_weight(p,i) = w[i]) <= 0.0 )
-	g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	      "%s: weight %d is not positive, %lg",
-	      __FUNCTION__, i, w[i]) ;
+	g_error("%s: weight %d is not positive, %lg",
+		__FUNCTION__, i, w[i]) ;
   } else
     for ( i = 0 ; i < n ; i ++ ) mop_polynomial_weight(p,i) = 1.0 ;
     
-  mop_polynomial_npts(p) = n ;
+  mop_polynomial_point_number(p) = n ;
 
   for ( i = 0 ; i < n ; i ++ ) mop_polynomial_index(p,i) = i ;
 
@@ -425,18 +412,18 @@ gint mop_polynomial_write(mop_polynomial_t *p, FILE *f)
 
   fprintf(f, "%d %d %d %d\n", 
 	  mop_polynomial_dimension(p),
-	  mop_polynomial_npts(p),
+	  mop_polynomial_point_number(p),
 	  mop_polynomial_order(p),
-	  mop_polynomial_nterms(p)) ;
+	  mop_polynomial_term_number(p)) ;
 
-  for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
+  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
     for ( j = 0 ; j < mop_polynomial_dimension(p) ; j ++ ) 
       fprintf(f, " %d", mop_polynomial_monomial_power(p,i,j)) ;
     fprintf(f, "\n") ;
   }
 
-  for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
-    for ( j = 0 ; j < mop_polynomial_nterms(p) ; j ++ ) {
+  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
+    for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {
       fprintf(f, " %lg", mop_polynomial_coefficient(p,i,j)) ;
     }
     fprintf(f, "\n") ;
@@ -473,24 +460,20 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
   gchar mns[32] ;
 
   if ( mop_polynomial_order_max(p) < order )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: order too high (%d) for polynomial (maximum order %d)", 
-	  __FUNCTION__, order, mop_polynomial_order_max(p)) ;
+    g_error("%s: order too high (%d) for polynomial (maximum order %d)", 
+	    __FUNCTION__, order, mop_polynomial_order_max(p)) ;
 
-  if ( w->npmax < mop_polynomial_npts(p) )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: workspace is not big enough (%d points) "
-	  "for polynomial (%d points)", 
-	  __FUNCTION__, w->npmax, mop_polynomial_npts(p)) ;
+  if ( w->npmax < mop_polynomial_point_number(p) )
+    g_error("%s: workspace is not big enough (%d points) "
+	    "for polynomial (%d points)", 
+	    __FUNCTION__, w->npmax, mop_polynomial_point_number(p)) ;
 
   if ( w->dim < mop_polynomial_dimension(p) )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: workspace dimension (%d) smaller than polynomial's (%d)", 
-	  __FUNCTION__, w->dim, mop_polynomial_dimension(p)) ;
+    g_error("%s: workspace dimension (%d) smaller than polynomial's (%d)", 
+	    __FUNCTION__, w->dim, mop_polynomial_dimension(p)) ;
 
   if ( w->omax < order )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: workspace maximum order (%d) "
+    g_error("%s: workspace maximum order (%d) "
 	  "too small for specified order (%d)", 
 	  __FUNCTION__, w->omax, order) ;
 
@@ -500,40 +483,40 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
 		  mop_polynomial_dimension(p),
 		  mon, &ni) ;
 
-  offset = mop_polynomial_npts(p)*mop_polynomial_npts(p) ;
+  offset = mop_polynomial_point_number(p)*mop_polynomial_point_number(p) ;
 
-  powers = &(w->block[offset+2*mop_polynomial_npts(p)]) ;
+  powers = &(w->block[offset+2*mop_polynomial_point_number(p)]) ;
 
   block_powers(mop_polynomial_points(p),
-	       mop_polynomial_npts(p),
+	       mop_polynomial_point_number(p),
 	       mop_polynomial_dimension(p),
 	       mop_polynomial_order(p),
 	       powers) ;
   
-  mop_polynomial_nterms(p) = 1 ;
+  mop_polynomial_term_number(p) = 1 ;
   for ( i = 0 ; i < mop_polynomial_dimension(p) ; i ++ ) 
     mop_polynomial_monomial_power(p,0,i) = 0 ;
 
   for ( k = 1 ; k < ni ; k ++ ) {
     A = gsl_matrix_view_array(w->block, 
-			      mop_polynomial_nterms(p)+1, 
-			      mop_polynomial_npts(p)) ;
-    norm = gsl_vector_view_array(&(w->block[offset]),mop_polynomial_npts(p)) ;
-    tau = gsl_vector_view_array(&(w->block[offset+mop_polynomial_npts(p)]),
+			      mop_polynomial_term_number(p)+1, 
+			      mop_polynomial_point_number(p)) ;
+    norm = gsl_vector_view_array(&(w->block[offset]),mop_polynomial_point_number(p)) ;
+    tau = gsl_vector_view_array(&(w->block[offset+mop_polynomial_point_number(p)]),
 				GSL_MIN(A.matrix.size1,A.matrix.size2)) ;
-    for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
-      for ( j = 0 ; j < mop_polynomial_npts(p) ; j ++ ) {
+    for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
+      for ( j = 0 ; j < mop_polynomial_point_number(p) ; j ++ ) {
 	gsl_matrix_set(&(A.matrix), i, j,
 		       block_multipower(powers, j, 
-					mop_polynomial_npts(p),
+					mop_polynomial_point_number(p),
 					mop_polynomial_dimension(p), 
 					mop_polynomial_monomial(p,i))) ;
       }
     }
-    for ( j = 0 ; j < mop_polynomial_npts(p) ; j ++ ) {
-      gsl_matrix_set(&(A.matrix), mop_polynomial_nterms(p), j, 
+    for ( j = 0 ; j < mop_polynomial_point_number(p) ; j ++ ) {
+      gsl_matrix_set(&(A.matrix), mop_polynomial_term_number(p), j, 
 		     block_multipower(powers, j,
-				      mop_polynomial_npts(p),
+				      mop_polynomial_point_number(p),
 				      mop_polynomial_dimension(p),
 				      &(mon[k*mop_polynomial_dimension(p)]))) ;
     }
@@ -548,10 +531,10 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
       g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	    "%s: adding trial monomial %d", __FUNCTION__, k) ;
       for ( j = 0 ; j < mop_polynomial_dimension(p) ; j ++ ) {
-	mop_polynomial_monomial_power(p,mop_polynomial_nterms(p),j)
+	mop_polynomial_monomial_power(p,mop_polynomial_term_number(p),j)
 	  = mon[k*mop_polynomial_dimension(p)+j] ;
       }
-      mop_polynomial_nterms(p) ++ ;
+      mop_polynomial_term_number(p) ++ ;
     } else {
       g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	    "%s: A rank deficient, monomial %d rejected", 
@@ -560,7 +543,7 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
 
   }
 
-  for ( i = 0 ; i < mop_polynomial_npts(p) ; i ++ ) 
+  for ( i = 0 ; i < mop_polynomial_point_number(p) ; i ++ ) 
     mop_polynomial_index(p,i) = i ;
   
   return MOP_SUCCESS ;
@@ -589,28 +572,24 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
   gsl_vector_view tau, norm ;
 
   if ( mop_polynomial_order_max(p) < order )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: order too high (%d) for polynomial (maximum order %d)", 
-	  __FUNCTION__, order, mop_polynomial_order_max(p)) ;
+    g_error("%s: order too high (%d) for polynomial (maximum order %d)", 
+	    __FUNCTION__, order, mop_polynomial_order_max(p)) ;
 
-  if ( w->npmax < mop_polynomial_npts(p) )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: workspace is not big enough (%d points) "
-	  "for polynomial (%d points)", 
-	  __FUNCTION__, w->npmax, mop_polynomial_npts(p)) ;
+  if ( w->npmax < mop_polynomial_point_number(p) )
+    g_error("%s: workspace is not big enough (%d points) "
+	    "for polynomial (%d points)", 
+	    __FUNCTION__, w->npmax, mop_polynomial_point_number(p)) ;
 
   if ( w->dim < mop_polynomial_dimension(p) )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: workspace dimension (%d) smaller than polynomial's (%d)", 
-	  __FUNCTION__, w->dim, mop_polynomial_dimension(p)) ;
+    g_error("%s: workspace dimension (%d) smaller than polynomial's (%d)", 
+	    __FUNCTION__, w->dim, mop_polynomial_dimension(p)) ;
 
   if ( w->omax < order )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: workspace maximum order (%d) "
-	  "too small for specified order (%d)", 
-	  __FUNCTION__, w->omax, order) ;
+    g_error("%s: workspace maximum order (%d) "
+	    "too small for specified order (%d)", 
+	    __FUNCTION__, w->omax, order) ;
 
-  for ( i = 0 ; i < mop_polynomial_npts(p) ; i ++ )
+  for ( i = 0 ; i < mop_polynomial_point_number(p) ; i ++ )
      mop_polynomial_index(p,i) = -1 ;
 
   mop_polynomial_order(p) = order ;
@@ -618,14 +597,14 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
   make_index_list(mop_polynomial_order(p),
 		  mop_polynomial_dimension(p),
 		  mop_polynomial_powers(p),
-		  &(mop_polynomial_nterms(p))) ;
+		  &(mop_polynomial_term_number(p))) ;
 
-  offset = mop_polynomial_npts(p)*mop_polynomial_npts(p) ;
+  offset = mop_polynomial_point_number(p)*mop_polynomial_point_number(p) ;
 
-  powers = &(w->block[offset+2*mop_polynomial_npts(p)]) ;
+  powers = &(w->block[offset+2*mop_polynomial_point_number(p)]) ;
 
   block_powers(mop_polynomial_points(p),
-	       mop_polynomial_npts(p),
+	       mop_polynomial_point_number(p),
 	       mop_polynomial_dimension(p),
 	       mop_polynomial_order(p),
 	       powers) ;
@@ -633,32 +612,32 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
   mop_polynomial_index(p,0) = 0 ; ni = 1 ;
 
   for ( k = 1 ; 
-	(k < mop_polynomial_npts(p)) &&  (ni < mop_polynomial_nterms(p)) ; 
+	(k < mop_polynomial_point_number(p)) &&  (ni < mop_polynomial_term_number(p)) ; 
 	k ++ ) {
 /*     A = gsl_matrix_view_array(w->block,  */
 /* 			      ni+1, */
-/* 			      mop_polynomial_nterms(p)) ; */
+/* 			      mop_polynomial_term_number(p)) ; */
 /*     norm = gsl_vector_view_array(&(w->block[offset]), */
-/* 				 mop_polynomial_nterms(p)) ; */
+/* 				 mop_polynomial_term_number(p)) ; */
     A = gsl_matrix_view_array(w->block,
-			      mop_polynomial_nterms(p), ni+1) ;
+			      mop_polynomial_term_number(p), ni+1) ;
     norm = gsl_vector_view_array(&(w->block[offset]), 
 				 A.matrix.size2) ;
-    tau = gsl_vector_view_array(&(w->block[offset+mop_polynomial_npts(p)]),
+    tau = gsl_vector_view_array(&(w->block[offset+mop_polynomial_point_number(p)]),
 				GSL_MIN(A.matrix.size1,A.matrix.size2)) ;
     for ( i = 0 ; i < ni ; i ++ ) {
-      for ( j = 0 ; j < mop_polynomial_nterms(p) ; j ++ ) {
+      for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {
 	gsl_matrix_set(&(A.matrix), j, i,
 		       block_multipower(powers, mop_polynomial_index(p,i), 
-					mop_polynomial_npts(p),
+					mop_polynomial_point_number(p),
 					mop_polynomial_dimension(p), 
 					mop_polynomial_monomial(p,j))) ;
       }
     }
-    for ( j = 0 ; j < mop_polynomial_nterms(p) ; j ++ ) {
+    for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {
       gsl_matrix_set(&(A.matrix), j, ni,
 		     block_multipower(powers, k,
-				      mop_polynomial_npts(p),
+				      mop_polynomial_point_number(p),
 				      mop_polynomial_dimension(p), 
 				      mop_polynomial_monomial(p,j))) ;
     }
@@ -678,7 +657,7 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
     }
   }
 
-  if ( ni < mop_polynomial_nterms(p) ) return MOP_FAILURE ;
+  if ( ni < mop_polynomial_term_number(p) ) return MOP_FAILURE ;
   
   return MOP_SUCCESS ;
 }
@@ -711,14 +690,13 @@ gint mop_polynomial_make(mop_polynomial_t *p,
   gsl_permutation *P ;
   gdouble tmp ;
 
-  if ( mop_polynomial_nterms(p) > mop_polynomial_npts(p) )
-    g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	  "%s: number of monomial powers (%d) greater "
-	  "than number of points (%d)",
-	  __FUNCTION__, mop_polynomial_nterms(p),
-	  mop_polynomial_npts(p)) ;
+  if ( mop_polynomial_term_number(p) > mop_polynomial_point_number(p) )
+    g_error("%s: number of monomial powers (%d) greater "
+	    "than number of points (%d)",
+	    __FUNCTION__, mop_polynomial_term_number(p),
+	    mop_polynomial_point_number(p)) ;
 
-  n = mop_polynomial_nterms(p) ;
+  n = mop_polynomial_term_number(p) ;
 
   vM = gsl_matrix_view_array(w->block, n, n) ;
   vS = gsl_matrix_view_array(&(w->block[n*n]), n, n) ;
@@ -732,31 +710,30 @@ gint mop_polynomial_make(mop_polynomial_t *p,
   gsl_matrix_set_zero(M) ;
 
   block_powers(mop_polynomial_points(p),
-	       mop_polynomial_npts(p),
+	       mop_polynomial_point_number(p),
 	       mop_polynomial_dimension(p),
 	       mop_polynomial_order(p),
 	       p->xp) ;
 
-  for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
+  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
     pi = mop_polynomial_monomial(p, i) ;
-    for ( j = 0 ; j < mop_polynomial_nterms(p) ; j ++ ) {
+    for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {
       pj = mop_polynomial_monomial(p, j) ;
-      for ( (tmp = 0.0), (m = 0) ; m < mop_polynomial_nterms(p) ; m ++ ) {
+      for ( (tmp = 0.0), (m = 0) ; m < mop_polynomial_term_number(p) ; m ++ ) {
 	k = mop_polynomial_index(p,m) ;
 	tmp +=
 	  block_multipower(p->xp, k, 
-			   mop_polynomial_npts(p), 
+			   mop_polynomial_point_number(p), 
 			   mop_polynomial_dimension(p),
 			   pi)*
 	  block_multipower(p->xp, k, 
-			   mop_polynomial_npts(p), 
+			   mop_polynomial_point_number(p), 
 			   mop_polynomial_dimension(p),
 			   pj)*mop_polynomial_weight(p,k) ;
 
 	if ( isnan(tmp) ) 
-	  g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		"%s: NaN error at i=%d, j=%d, k=%d", 
-		__FUNCTION__, i, j, k) ;	     
+	  g_error("%s: NaN error at i=%d, j=%d, k=%d", 
+		  __FUNCTION__, i, j, k) ;	     
       }
       gsl_matrix_set(M, i, j, tmp) ;
     }
@@ -766,25 +743,24 @@ gint mop_polynomial_make(mop_polynomial_t *p,
     return MOP_NO_BASIS ;
 
   gsl_permutation_init(P) ;
-  for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
-    vr = gsl_vector_view_array(&(p->R[i*mop_polynomial_nterms(p)]), 
-			       mop_polynomial_nterms(p)) ;
+  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
+    vr = gsl_vector_view_array(&(p->R[i*mop_polynomial_term_number(p)]), 
+			       mop_polynomial_term_number(p)) ;
     gsl_vector_set_zero(iD) ;
     j = mop_polynomial_index(p,i) ;
 
     if ( isnan(tmp=1.0/sqrt(mop_polynomial_weight(p,j)*gsl_vector_get(D,i))) )
-      g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	    "%s: NaN error in iD, i=%d, w=%lg, D_i=%lg", 
-	    __FUNCTION__, i, mop_polynomial_weight(p,j), gsl_vector_get(D,i)) ;
+      g_error("%s: NaN error in iD, i=%d, w=%lg, D_i=%lg", 
+	      __FUNCTION__, i, mop_polynomial_weight(p,j),
+	      gsl_vector_get(D,i)) ;
     
     gsl_vector_set(iD, i, tmp) ;
 		   
     gsl_linalg_LU_solve(S, P, iD, &(vr.vector)) ;
     for ( j = 0 ; j < vr.vector.size ; j ++ ) {
       if ( isnan(gsl_vector_get(&(vr.vector),j)) ) {
-	g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	      "%s: NaN error in R, i=%d, j=%d",
-	      __FUNCTION__, i, j) ;
+	g_error("%s: NaN error in R, i=%d, j=%d",
+		__FUNCTION__, i, j) ;
       }
     }
   }
@@ -809,10 +785,10 @@ gint mop_polynomial_write_latex(mop_polynomial_t *p, FILE *f)
   gint i, j, k ;
   gboolean plus ;
 
-  for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
+  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
     fprintf(f, "P_{%d} &= ", i) ;
     plus = FALSE ;
-    for ( j = 0 ; j < mop_polynomial_nterms(p) ; j ++ ) {
+    for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {
       if ( fabs(mop_polynomial_coefficient(p, i, j)) > 1e-9 ) {
 	if ( plus && mop_polynomial_coefficient(p, i, j) > 0) 
 	  fprintf(f, "+") ;
@@ -827,7 +803,7 @@ gint mop_polynomial_write_latex(mop_polynomial_t *p, FILE *f)
 	plus = TRUE ;
       }
     }
-    if ( i < mop_polynomial_nterms(p)-1 ) fprintf(f, "\\\\\n") ;
+    if ( i < mop_polynomial_term_number(p)-1 ) fprintf(f, "\\\\\n") ;
   }
 
   return MOP_SUCCESS ;
@@ -854,20 +830,19 @@ gint mop_polynomial_normalize(mop_polynomial_t *p,
   ws = w->block ;
   mop_polynomial_eval_base(p, ws) ;
 
-/*   for ( i = 0 ; i < mop_polynomial_npts(p) ; i ++ ) { */
-  for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
-    for ( (s = 0.0), (j = 0) ; j < mop_polynomial_nterms(p) ; j ++ )
-      s += ws[j*mop_polynomial_nterms(p)+i]*
-	ws[j*mop_polynomial_nterms(p)+i]*
+/*   for ( i = 0 ; i < mop_polynomial_point_number(p) ; i ++ ) { */
+  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
+    for ( (s = 0.0), (j = 0) ; j < mop_polynomial_term_number(p) ; j ++ )
+      s += ws[j*mop_polynomial_term_number(p)+i]*
+	ws[j*mop_polynomial_term_number(p)+i]*
 	mop_polynomial_weight(p,mop_polynomial_index(p,j)) ;
 
     s = sqrt(s) ;
     if ( s == 0.0 ) {
-      g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-	    "%s: zero inner product for polynomial %d",
-	    __FUNCTION__, i) ;
+      g_error("%s: zero inner product for polynomial %d",
+	      __FUNCTION__, i) ;
     }
-    for ( j = 0 ; j < mop_polynomial_nterms(p) ; j ++ )
+    for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ )
       mop_polynomial_coefficient(p,i,j) /= s ;
   }
 
@@ -896,8 +871,8 @@ gint mop_polynomial_eval(mop_polynomial_t *p, gdouble *x,
 	       mop_polynomial_order(p),
 	       p->xp) ;
 
-  for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
-    for ( (P[i] = 0.0), (j = 0) ; j < mop_polynomial_nterms(p) ; j ++ )
+  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
+    for ( (P[i] = 0.0), (j = 0) ; j < mop_polynomial_term_number(p) ; j ++ )
       P[i] += mop_polynomial_coefficient(p,i,j)*
 	block_multipower(p->xp, 0, 1, 
 			 mop_polynomial_dimension(p),
@@ -915,7 +890,7 @@ gint mop_polynomial_eval(mop_polynomial_t *p, gdouble *x,
  * 
  * @param p ::mop_polynomial_t to evaluate;
  * @param P array of \a p evaluated at its base points so that 
- * \f$P_{i}(x_{j})\f$ is P[j*mop_polynomial_nterms(p)+i].
+ * \f$P_{i}(x_{j})\f$ is P[j*mop_polynomial_term_number(p)+i].
  * 
  * @return MOP_SUCCESS on success.
  */
@@ -926,25 +901,24 @@ gint mop_polynomial_eval_base(mop_polynomial_t *p, gdouble *P)
   gint i, j, k, n ;
 
   block_powers(mop_polynomial_points(p),
-	       mop_polynomial_npts(p),
+	       mop_polynomial_point_number(p),
 	       mop_polynomial_dimension(p),
 	       mop_polynomial_order(p),
 	       p->xp) ;
   
-  for ( k = 0 ; k < mop_polynomial_nterms(p) ; k ++ )
-    for ( i = 0 ; i < mop_polynomial_nterms(p) ; i ++ ) {
-      for ( (P[k*mop_polynomial_nterms(p)+i] = 0.0), (n = 0) ; 
-	    n < mop_polynomial_nterms(p) ; n ++ ) {
+  for ( k = 0 ; k < mop_polynomial_term_number(p) ; k ++ )
+    for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
+      for ( (P[k*mop_polynomial_term_number(p)+i] = 0.0), (n = 0) ; 
+	    n < mop_polynomial_term_number(p) ; n ++ ) {
 	j = mop_polynomial_index(p,k) ;
-	if ( isnan(P[k*mop_polynomial_nterms(p)+i] +=
+	if ( isnan(P[k*mop_polynomial_term_number(p)+i] +=
 		   mop_polynomial_coefficient(p,i,n)*
 		   block_multipower(p->xp, j,
-				    mop_polynomial_npts(p),
+				    mop_polynomial_point_number(p),
 				    mop_polynomial_dimension(p),
 				    mop_polynomial_monomial(p,n))) )
-	  g_log(G_LOG_DOMAIN, G_LOG_LEVEL_ERROR,
-		"%s: NaN error at i=%d, j=%d, k=%d", 
-		__FUNCTION__, i, j, k) ;
+	  g_error("%s: NaN error at i=%d, j=%d, k=%d", 
+		  __FUNCTION__, i, j, k) ;
       }
     }  
 
@@ -970,19 +944,19 @@ gint mop_polynomial_points_scale(mop_polynomial_t *p, gint method)
   gint i ;
   gdouble R2 ;
 
-/*   for ( (i = 1), (R2 = G_MAXDOUBLE) ; i < mop_polynomial_npts(p) ; i ++ ) */
+/*   for ( (i = 1), (R2 = G_MAXDOUBLE) ; i < mop_polynomial_point_number(p) ; i ++ ) */
 /*     R2 = MIN(R2,mop_polynomial_point_magnitude2(p, i)) ; */
-  for ( (i = 1), (R2 = 0.0) ; i < mop_polynomial_npts(p) ; i ++ )
+  for ( (i = 1), (R2 = 0.0) ; i < mop_polynomial_point_number(p) ; i ++ )
     R2 = MAX(R2,mop_polynomial_point_magnitude2(p, i)) ;
 /*     R2 += mop_polynomial_point_magnitude2(p, i) ; */
-/*   R2 /= mop_polynomial_npts(p) ; */
+/*   R2 /= mop_polynomial_point_number(p) ; */
 
   p->sc = 1.0/sqrt(R2) ;
 
   g_debug("%s: scale set to %lg", __FUNCTION__, p->sc) ;
 
   for ( (i = 0) ; 
-	i < mop_polynomial_npts(p)*mop_polynomial_dimension(p) ; i ++ )
+	i < mop_polynomial_point_number(p)*mop_polynomial_dimension(p) ; i ++ )
     p->x[i] *= p->sc ;
 
   return MOP_SUCCESS ;

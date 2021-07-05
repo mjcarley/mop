@@ -1,6 +1,6 @@
 /* mop.h
  * 
- * Copyright (C) 2007 Michael Carley
+ * Copyright (C) 2007, 2021 Michael Carley
  * 
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -55,12 +55,12 @@ struct _mop_polynomial_workspace_t {
 } ;
 
 #define mop_polynomial_dimension(p) (p->d)
-#define mop_polynomial_npts(p) (p->np)
-#define mop_polynomial_npts_max(p) (p->npmax)
+#define mop_polynomial_point_number(p) (p->np)
+#define mop_polynomial_point_number_max(p) (p->npmax)
 #define mop_polynomial_order(p) (p->o)
 #define mop_polynomial_order_max(p) (p->omax)
-#define mop_polynomial_nterms(p) (p->nt)
-#define mop_polynomial_nterms_max(p) (p->ntmax)
+#define mop_polynomial_term_number(p) (p->nt)
+#define mop_polynomial_term_number_max(p) (p->ntmax)
 #define mop_polynomial_powers(p) (p->p)
 #define mop_polynomial_monomial(p,_i) (&(p->p[(_i)*(p->d)]))
 #define mop_polynomial_monomial_power(p,_i,_j) (p->p[(_i)*(p->d)+(_j)])
