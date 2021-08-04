@@ -74,8 +74,10 @@ gint mop_polynomial_transform(mop_polynomial_t *p, gdouble *f, gint n,
     for ( m = 0 ; m < mop_polynomial_term_number(p) ; m ++ ) {
       j = mop_polynomial_index(p,m) ;
       for ( k = 0 ; k < n ; k ++ ) {
-	if ( isnan(c[i*n+k] += f[j*n+k]*ws[m*mop_polynomial_term_number(p)+i]*
-	  mop_polynomial_weight(p,j)) ) 
+	if ( isnan(c[i*n+k] +=
+		   f[j*n+k]*
+		   ws[m*mop_polynomial_term_number(p)+i]*
+		   mop_polynomial_weight(p,j)) ) 
 	  g_error("%s: NaN error at i=%d, j=%d, k=%d",
 		  __FUNCTION__, i, j, k) ;
       }      
@@ -212,7 +214,6 @@ gint mop_polynomial_differentiate(mop_polynomial_t *p, gdouble *x,
  * 
  * @return 0 on success.
  */
-
 
 gint mop_differentiation_weights(mop_polynomial_t *p, 
 				 gdouble *x, gint *d, gdouble *v,

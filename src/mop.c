@@ -662,7 +662,6 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
   return MOP_SUCCESS ;
 }
 
-
 /** 
  * Generate the discrete orthogonal polynomials associated with \a p,
  * using the method of Xu, Yuan, 2004, `On discrete orthogonal

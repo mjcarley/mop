@@ -105,6 +105,6 @@ fi
 if test "$echo_libs" = "yes"; then
 	glib_libs="-L${exec_prefix}/lib -lmop  -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm  $glib_libs -lm"
 	glib_libs=`uniquify "$glib_libs"`
-	#echo $glib_libs -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm 
-	echo -L${exec_prefix}/lib -lmop -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm 
+	#echo $glib_libs -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm  -lblas -lm 
+	echo -L${exec_prefix}/lib -lmop -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm  -lblas -lm 
 fi

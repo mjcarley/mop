@@ -75,6 +75,23 @@ else
   exit
 fi
 
+AC_CHECK_PROG(BLASWRAP, blaswrap-config, yes, no)
+if test x$BLASWRAP = xyes ; then
+   AC_DEFINE(HAVE_BLASWRAP, 1, [BLAS wrapper header available])
+   blaswrap_cflags=`blaswrap-config --cflags`
+   blaswrap_libs=`blaswrap-config --libs`
+else
+  echo \#################################################################
+  echo \#
+  echo \# BLAS wrapper library not installed or not properly installed.
+  echo \# You can get it from
+  echo \#
+  echo \# https://github.com/mjcarley/blaswrap
+  echo \#
+  echo \#################################################################
+  exit
+fi
+
 # taken from Stephane Popinet's GTS configure.in
 
 AM_PATH_GLIB_2_0(2.4.0, has_glib2=yes, has_glib2=no, gthread gmodule)
@@ -162,10 +179,21 @@ AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(LDFLAGS)
 
-##AC_CHECK_LIB(m, sqrt)
+AC_CHECK_LIB(m, sqrt)
 AC_CONFIG_MACRO_DIR([m4])
 
-LIBS="$glib_libs $gsl_libs $LIBS"
+AC_OPENMP
+AC_PROG_F77
+AC_F77_LIBRARY_LDFLAGS
+AC_F77_DUMMY_MAIN
+AC_F77_WRAPPERS
+ACX_BLAS
+ACX_LAPACK
+
+blas_libs="$BLAS_LIBS"
+lapack_libs="$LAPACK_LIBS"
+
+LIBS="$glib_libs $gsl_libs $lapack_libs $blas_libs $LIBS"
 
 # Specify a configuration file
 AC_CONFIG_HEADERS(config.h)

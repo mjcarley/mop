@@ -92,6 +92,7 @@ ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/libtool.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/acx_blas.m4 $(top_srcdir)/acx_lapack.m4 \
 	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
@@ -190,6 +191,8 @@ AUTOCONF = ${SHELL} /home/michael/Codes/C/mop/missing autoconf
 AUTOHEADER = ${SHELL} /home/michael/Codes/C/mop/missing autoheader
 AUTOMAKE = ${SHELL} /home/michael/Codes/C/mop/missing automake-1.15
 AWK = gawk
+BLASWRAP = yes
+BLAS_LIBS = -lblas
 CC = gcc
 CCDEPMODE = depmode=gcc3
 CFLAGS = -g -O2 -Wall -Werror-implicit-function-declaration -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include
@@ -206,7 +209,10 @@ ECHO_N = -n
 ECHO_T = 
 EGREP = /usr/bin/grep -E
 EXEEXT = 
+F77 = g77
+FFLAGS = -g -O2
 FGREP = /usr/bin/grep -F
+FLIBS =  -L/usr/lib64 -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0 -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0/../../../../x86_64-slackware-linux/lib -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0/../../.. -lglib-2.0 -lgsl -lgslcblas -lgfortran -lm -lquadmath
 GLIB_CFLAGS = -pthread -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include
 GLIB_COMPILE_RESOURCES = glib-compile-resources
 GLIB_CONFIG = 
@@ -221,10 +227,11 @@ INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
 INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
+LAPACK_LIBS = 
 LD = /usr/x86_64-slackware-linux/bin/ld -m elf_x86_64
 LDFLAGS =  -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm
 LIBOBJS = 
-LIBS = -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm 
+LIBS = -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm  -lblas -lm 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
@@ -246,6 +253,7 @@ NM = /usr/bin/nm -B
 NMEDIT = 
 OBJDUMP = objdump
 OBJEXT = o
+OPENMP_CFLAGS = -fopenmp
 OTOOL = 
 OTOOL64 = 
 PACKAGE = mop
@@ -272,6 +280,7 @@ abs_top_srcdir = /home/michael/Codes/C/mop
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
+ac_ct_F77 = g77
 am__include = include
 am__leading_dot = .
 am__quote = 
