@@ -17,7 +17,7 @@ old_library='libmop.a'
 inherited_linker_flags=''
 
 # Libraries that this one depends upon.
-dependency_libs=' -L/usr/lib64 /usr/lib64/libglib-2.0.la -lpthread /usr/lib64/libgsl.la /usr/lib64/libgslcblas.la -lm'
+dependency_libs=' /usr/lib64/libglib-2.0.la -lpthread -lblas -lm'
 
 # Names of additional weak libraries provided by this library
 weak_library_names=''

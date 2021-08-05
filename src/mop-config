@@ -3,8 +3,6 @@
 
 glib_libs="-lglib-2.0"
 glib_cflags="-I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include"
-gsl_libs="-L/usr/lib64 -lgsl -lgslcblas -lm"
-gsl_cflags="-I/usr/include"
 
 prefix=/home/michael/Codes
 exec_prefix=${prefix}
@@ -98,13 +96,13 @@ if test "$echo_exec_prefix" = "yes"; then
 	echo $exec_prefix
 fi
 if test "$echo_cflags" = "yes"; then
-	glib_cflags="$glib_cflags $gsl_cflags -I${prefix}/include"
+	glib_cflags="$glib_cflags -I${prefix}/include"
 	glib_cflags=`uniquify "$glib_cflags"`
 	echo $glib_cflags
 fi
 if test "$echo_libs" = "yes"; then
-	glib_libs="-L${exec_prefix}/lib -lmop  -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm  $glib_libs -lm"
+	glib_libs="-L${exec_prefix}/lib -lmop  -lglib-2.0  $glib_libs -lm"
 	glib_libs=`uniquify "$glib_libs"`
-	#echo $glib_libs -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm  -lblas -lm 
-	echo -L${exec_prefix}/lib -lmop -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm  -lblas -lm 
+	#echo $glib_libs -lglib-2.0  -lblas -lm 
+	echo -L${exec_prefix}/lib -lmop -lglib-2.0  -lblas -lm 
 fi

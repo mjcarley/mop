@@ -60,21 +60,6 @@ AC_PROG_AWK
 AC_ISC_POSIX
 AC_HEADER_STDC
 
-AC_CHECK_PROG(GSL, gsl-config, yes, no)
-if test x$GSL = xyes ; then
-   gsl_cflags=`gsl-config --cflags`
-   gsl_libs=`gsl-config --libs`
-else
-  echo \#################################################################
-  echo \#
-  echo \# GNU Scientific Library not available or not properly installed.
-  echo \# You can get the most recent version from 
-  echo \#      http://www.gnu.org/software/gsl/
-  echo \#
-  echo \#################################################################
-  exit
-fi
-
 AC_CHECK_PROG(BLASWRAP, blaswrap-config, yes, no)
 if test x$BLASWRAP = xyes ; then
    AC_DEFINE(HAVE_BLASWRAP, 1, [BLAS wrapper header available])
@@ -169,11 +154,9 @@ fi
 
 AC_SUBST(glib_cflags)
 AC_SUBST(glib_libs)
-AC_SUBST(gsl_cflags)
-AC_SUBST(gsl_libs)
 
-CFLAGS="$CFLAGS $glib_cflags $gsl_cflags"
-LDFLAGS="$LDFLAGS $glib_libs $gsl_libs"
+CFLAGS="$CFLAGS $glib_cflags"
+LDFLAGS="$LDFLAGS $glib_libs"
 
 AC_SUBST(CFLAGS)
 AC_SUBST(CPPFLAGS)
@@ -193,7 +176,7 @@ ACX_LAPACK
 blas_libs="$BLAS_LIBS"
 lapack_libs="$LAPACK_LIBS"
 
-LIBS="$glib_libs $gsl_libs $lapack_libs $blas_libs $LIBS"
+LIBS="$glib_libs $lapack_libs $blas_libs $LIBS"
 
 # Specify a configuration file
 AC_CONFIG_HEADERS(config.h)

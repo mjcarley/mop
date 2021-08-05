@@ -35,9 +35,7 @@
 
 #include <glib.h>
 
-#include <gsl/gsl_math.h>
-#include <gsl/gsl_linalg.h>
-#include <gsl/gsl_specfunc.h>
+#include <blaswrap.h>
 
 #include "mop.h"
 #include "mopblock.h"
@@ -46,7 +44,43 @@
 #include "config.h"
 #endif
 
-#define SDS_TRANSPOSE_S
+#define matrix_index_lower(_n,_i,_j) ((_j)*(2*(_n)-(_j)-1)/2+(_i))
+
+static gint ldl_decomp_tp(gdouble *A, gint n, gdouble *v)
+
+/*
+ * LDL^T decomposition for symmetric matrix A, using FORTRAN packed
+ * ordering. On exit A is overwritten with D in its diagonal entries
+ * and the off-diagonal terms filled with the corresponding entries of
+ * L.
+ *
+ * (Golub and van Loan page 138)
+ */
+  
+{
+  gint i, j, k ;
+
+  for ( j = 0 ; j < n ; j ++ ) {
+    for ( i = 0 ; i < j ; i ++ ) {
+      v[i] = A[matrix_index_lower(n,j,i)]*A[matrix_index_lower(n,i,i)] ;
+    }
+
+    v[j] = A[matrix_index_lower(n,j,j)] ;
+    for ( i = 0 ; i < j ; i ++ ) {
+      v[j] -= A[matrix_index_lower(n,j,i)]*v[i] ;
+    }
+
+    A[matrix_index_lower(n,j,j)]  = v[j] ;
+    for ( i = j+1 ; i < n ; i ++ ) {
+      for ( k = 0 ; k < j ; k ++ ) {
+	A[matrix_index_lower(n,i,j)] -= A[matrix_index_lower(n,i,k)]*v[k] ;
+      }
+      A[matrix_index_lower(n,i,j)] /= v[j] ;
+    }
+  }
+  
+  return 0 ;
+}
 
 static void monomial_string(gchar *s, gint *mn, gint dim)
 
@@ -61,99 +95,30 @@ static void monomial_string(gchar *s, gint *mn, gint dim)
   return ;
 }
 
-static gint sds_decomp(gsl_matrix *A, gsl_matrix *S, gsl_vector *D,
-		       gsl_vector *v)
+static gint matrix_rank_svd(gdouble *A, gint m, gint n, gint lda,
+			    gdouble tol, gdouble *work, gint lwork)
 
 {
-  gdouble tmp ;
-  gint i, j, k, m, n ;
+  gdouble *s ;
+  gint one = 1, info, rank ;
 
-  if ( A->size1 != S->size1 || A->size2 != S->size2 ) 
-    g_error("%s: matrices A (%lux%lu) and S (%lux%lu) not the same size",
-	  __FUNCTION__, A->size1, A->size2, S->size1, S->size2) ;
-  if ( A->size1 != A->size2 )
-    g_error("%s: matrix A (%lux%lu) must be square",
-	    __FUNCTION__, A->size1, A->size2) ;
+  /* lwork = MAX(3*MIN(m,n)+MAX(m,n),5*MIN(m,n)-4) ; */
+  /* info = 0 ; */
+  /* dgesvd_("N", "N", &n, &m, A, &lda, s, NULL, &one, NULL, &one, work, */
+  /* 	  &lwork, &info) ; */
+  /* lwork = work[0] ; */
+
+  lwork -= MAX(m,n) ;
+  s = &(work[lwork]) ;
+  info = 1 ;
   
-  if ( D->size != A->size1 ) 
-    g_error("%s: vector D (%lu) must have as many rows as matrix A (%lux%lu)",
-	  __FUNCTION__, D->size, A->size1, A->size2) ;
+  dgesvd_("N", "N", &m, &n, A, &lda, s, NULL, &one, NULL, &one, work,
+	  &lwork, &info) ;
 
-  n = A->size1 ;
-
-  gsl_vector_set_zero(v) ; gsl_vector_set_zero(D) ;
-  gsl_matrix_set_zero(S) ;
-
-  for ( j = 0 ; j < n ; j ++ ) {
-    for ( i = 0 ; i <= j-1 ; i ++ ) {
-#ifdef SDS_TRANSPOSE_S
-      gsl_vector_set(v, i, gsl_matrix_get(S, i, j)*gsl_vector_get(D, i)) ;
-#else
-      gsl_vector_set(v, i, gsl_matrix_get(S, j, i)*gsl_vector_get(D, i)) ;
-#endif /*SDS_TRANSPOSE_S*/
-    }
-    for ( (tmp = gsl_matrix_get(A, j, j)), (k = 0) ; k <= j-1 ; k ++ ) {
-#ifdef SDS_TRANSPOSE_S
-      tmp -= gsl_matrix_get(S, k, j)*gsl_vector_get(v,k) ;
-#else
-      tmp -= gsl_matrix_get(S, j, k)*gsl_vector_get(v,k) ;
-#endif /*SDS_TRANSPOSE_S*/
-    }
-    if ( isnan(tmp) ) 
-      g_error("%s: NaN error at j=%d", __FUNCTION__, j) ;
-    if ( tmp <= 0.0 ) {
-      g_warning("%s: D_j=%lg out of range at j=%d", __FUNCTION__, tmp, j) ;
-      return MOP_FAILURE ;
-    }
-    gsl_vector_set(v, j, tmp) ; gsl_vector_set(D, j, tmp) ;
-    
-    for ( m = j+1 ; m < n ; m ++ ) {
-      for ( (tmp = gsl_matrix_get(A, m, j)), (k = 0) ; k <= j-1 ; k ++ ) {
-#ifdef SDS_TRANSPOSE_S
-	tmp -= gsl_matrix_get(S, k, m)*gsl_vector_get(v, k) ;
-#else
- 	tmp -= gsl_matrix_get(S, m, k)*gsl_vector_get(v, k) ;
-#endif /*SDS_TRANSPOSE_S*/
-	if ( isnan(tmp) ) 
-	  g_error("%s: NaN error at i=%d, j=%d, m=%d", __FUNCTION__, i, j, m) ;	
-      }
-
-#ifdef SDS_TRANSPOSE_S
-      gsl_matrix_set(S, j, m, tmp/gsl_vector_get(v, j)) ;
-#else
-      gsl_matrix_set(S, m, j, tmp/gsl_vector_get(v, j)) ;
-#endif /*SDS_TRANSPOSE_S*/
-      if ( isnan(tmp/gsl_vector_get(v, j)) ) 
-	g_error("%s: NaN error at j=%d, m=%d, v_j=%lg", 
-		__FUNCTION__, j, m, gsl_vector_get(v, j)) ;	
-    }
+  for ( rank = 1 ; rank < n ; rank ++ ) {
+    if ( fabs(s[rank]/s[0]) < tol ) return rank ;
   }
-
-  for ( i = 0 ; i < n ; i ++ ) gsl_matrix_set(S, i, i, 1.0) ;
-
-  return MOP_SUCCESS ;
-}
-
-static gint matrix_rank(gsl_matrix *A, gdouble tol, 
-			gsl_vector *tau, gsl_vector *norm)
-
-{
-  gsl_permutation *p ;
-  gint sgn, rank, i, j, m, n ;
-
-  m = A->size1 ; n = A->size2 ;
-  p = gsl_permutation_alloc(n) ;
-
-  gsl_linalg_QRPT_decomp(A, tau, p, &sgn, norm) ;
-
-  for ( rank = i = 0 ; i < GSL_MIN(m,n) ; i ++ )
-    for ( j = i ; j < GSL_MIN(m,n) ; j ++ )
-      if ( fabs(gsl_matrix_get(A,i,j)) > tol ) {
-	rank ++ ; break ;
-      }
-
-  gsl_permutation_free(p) ;
-
+  
   return rank ;
 }
 
@@ -329,7 +294,7 @@ mop_polynomial_workspace_t *mop_polynomial_workspace_alloc(gint np,
     + np*dim*(order+1) /*block of powers*/
     + np /*tau vector*/
     + np ; /*norm vector*/
-  w->block = (gdouble *)g_malloc(4*bsize*sizeof(gdouble)) ;
+  w->block = (gdouble *)g_malloc0(4*bsize*sizeof(gdouble)) ;
   
   w->imax = mop_number_of_terms(dim, order)*dim ;
   w->iblock = (gint *)g_malloc(w->imax*sizeof(gint)) ;
@@ -453,12 +418,12 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
 				gdouble tol, mop_polynomial_workspace_t *w)
 
 {
-  gint i, j, k, rank, ni, *mon, offset ;
-  gdouble *powers ;
-  gsl_matrix_view A ;
-  gsl_vector_view tau, norm ;
+  gint i, j, k, rank, ni, *mon, offset, np, nt ;
+  gdouble *powers, *A ;
   gchar mns[32] ;
 
+  g_assert(mop_polynomial_point_number(p) < mop_polynomial_term_number_max(p)) ;
+  
   if ( mop_polynomial_order_max(p) < order )
     g_error("%s: order too high (%d) for polynomial (maximum order %d)", 
 	    __FUNCTION__, order, mop_polynomial_order_max(p)) ;
@@ -497,37 +462,34 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
   for ( i = 0 ; i < mop_polynomial_dimension(p) ; i ++ ) 
     mop_polynomial_monomial_power(p,0,i) = 0 ;
 
+  np = mop_polynomial_point_number(p) ;
   for ( k = 1 ; k < ni ; k ++ ) {
-    A = gsl_matrix_view_array(w->block, 
-			      mop_polynomial_term_number(p)+1, 
-			      mop_polynomial_point_number(p)) ;
-    norm = gsl_vector_view_array(&(w->block[offset]),mop_polynomial_point_number(p)) ;
-    tau = gsl_vector_view_array(&(w->block[offset+mop_polynomial_point_number(p)]),
-				GSL_MIN(A.matrix.size1,A.matrix.size2)) ;
+    nt = mop_polynomial_term_number(p) ;
+    A = w->block ; /*A is size (nt+1)*np and FORTRAN indexed*/
     for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
       for ( j = 0 ; j < mop_polynomial_point_number(p) ; j ++ ) {
-	gsl_matrix_set(&(A.matrix), i, j,
-		       block_multipower(powers, j, 
-					mop_polynomial_point_number(p),
-					mop_polynomial_dimension(p), 
-					mop_polynomial_monomial(p,i))) ;
+	A[j*(nt+1)+i] = 
+	  block_multipower(powers, j, 
+			   mop_polynomial_point_number(p),
+			   mop_polynomial_dimension(p), 
+			   mop_polynomial_monomial(p,i)) ;
       }
     }
     for ( j = 0 ; j < mop_polynomial_point_number(p) ; j ++ ) {
-      gsl_matrix_set(&(A.matrix), mop_polynomial_term_number(p), j, 
-		     block_multipower(powers, j,
-				      mop_polynomial_point_number(p),
-				      mop_polynomial_dimension(p),
-				      &(mon[k*mop_polynomial_dimension(p)]))) ;
+      A[j*(nt+1)+nt] =
+	block_multipower(powers, j,
+			 mop_polynomial_point_number(p),
+			 mop_polynomial_dimension(p),
+			 &(mon[k*mop_polynomial_dimension(p)])) ;
     }
-    rank = matrix_rank(&(A.matrix), tol,
-		       &(tau.vector), &(norm.vector)) ;
+    gdouble work[1024] ;
+    rank = matrix_rank_svd(A, nt+1, np, nt+1, tol, work, 1024) ;
     monomial_string(mns, &(mon[k*mop_polynomial_dimension(p)]),
 		    mop_polynomial_dimension(p)) ;  
 		    
     g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "%s: trial monomial %d (%s): rank=%d", __FUNCTION__, k, mns, rank) ;
-    if ( rank == A.matrix.size1 ) {
+    if ( rank == nt+1 ) {
       g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	    "%s: adding trial monomial %d", __FUNCTION__, k) ;
       for ( j = 0 ; j < mop_polynomial_dimension(p) ; j ++ ) {
@@ -566,10 +528,8 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
 				 gdouble tol, mop_polynomial_workspace_t *w)
 
 {
-  gint i, j, k, rank, ni, offset ;
-  gdouble *powers ;
-  gsl_matrix_view A ;
-  gsl_vector_view tau, norm ;
+  gint i, j, k, rank, ni, offset, npts, nterm ;
+  gdouble *powers, *A ;
 
   if ( mop_polynomial_order_max(p) < order )
     g_error("%s: order too high (%d) for polynomial (maximum order %d)", 
@@ -589,8 +549,9 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
 	    "too small for specified order (%d)", 
 	    __FUNCTION__, w->omax, order) ;
 
-  for ( i = 0 ; i < mop_polynomial_point_number(p) ; i ++ )
-     mop_polynomial_index(p,i) = -1 ;
+  npts = mop_polynomial_point_number(p) ;
+  
+  for ( i = 0 ; i < npts ; i ++ ) mop_polynomial_index(p,i) = -1 ;
 
   mop_polynomial_order(p) = order ;
 
@@ -599,53 +560,43 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
 		  mop_polynomial_powers(p),
 		  &(mop_polynomial_term_number(p))) ;
 
-  offset = mop_polynomial_point_number(p)*mop_polynomial_point_number(p) ;
+  nterm = mop_polynomial_term_number(p) ;
+  offset = npts*npts ;
 
-  powers = &(w->block[offset+2*mop_polynomial_point_number(p)]) ;
+  powers = &(w->block[offset+2*npts]) ;
 
   block_powers(mop_polynomial_points(p),
-	       mop_polynomial_point_number(p),
+	       npts,
 	       mop_polynomial_dimension(p),
 	       mop_polynomial_order(p),
 	       powers) ;
   
   mop_polynomial_index(p,0) = 0 ; ni = 1 ;
 
-  for ( k = 1 ; 
-	(k < mop_polynomial_point_number(p)) &&  (ni < mop_polynomial_term_number(p)) ; 
-	k ++ ) {
-/*     A = gsl_matrix_view_array(w->block,  */
-/* 			      ni+1, */
-/* 			      mop_polynomial_term_number(p)) ; */
-/*     norm = gsl_vector_view_array(&(w->block[offset]), */
-/* 				 mop_polynomial_term_number(p)) ; */
-    A = gsl_matrix_view_array(w->block,
-			      mop_polynomial_term_number(p), ni+1) ;
-    norm = gsl_vector_view_array(&(w->block[offset]), 
-				 A.matrix.size2) ;
-    tau = gsl_vector_view_array(&(w->block[offset+mop_polynomial_point_number(p)]),
-				GSL_MIN(A.matrix.size1,A.matrix.size2)) ;
+  for ( k = 1 ; (k < npts) &&  (ni < nterm) ; k ++ ) {
+    A = w->block ; /*A is size (ni+1)*nterm and FORTRAN indexed*/
     for ( i = 0 ; i < ni ; i ++ ) {
-      for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {
-	gsl_matrix_set(&(A.matrix), j, i,
-		       block_multipower(powers, mop_polynomial_index(p,i), 
-					mop_polynomial_point_number(p),
-					mop_polynomial_dimension(p), 
-					mop_polynomial_monomial(p,j))) ;
+      for ( j = 0 ; j < nterm ; j ++ ) {
+	A[j*(ni+1)+i] = 
+	  block_multipower(powers, mop_polynomial_index(p,i),
+			   npts,
+			   mop_polynomial_dimension(p),
+			   mop_polynomial_monomial(p,j)) ;
       }
     }
-    for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {
-      gsl_matrix_set(&(A.matrix), j, ni,
-		     block_multipower(powers, k,
-				      mop_polynomial_point_number(p),
-				      mop_polynomial_dimension(p), 
-				      mop_polynomial_monomial(p,j))) ;
+    for ( j = 0 ; j < nterm ; j ++ ) {
+      A[j*(ni+1)+i] = 
+	block_multipower(powers, k,
+			 npts,
+			 mop_polynomial_dimension(p),
+			 mop_polynomial_monomial(p,j)) ;
     }
-    rank = matrix_rank(&(A.matrix), tol,
-		       &(tau.vector), &(norm.vector)) ;
+    gdouble work[1024] ;
+    rank = matrix_rank_svd(A, nterm, ni+1, nterm, tol, work, 1024) ;
+
     g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
-	  "%s: trial point %d: rank=%d", __FUNCTION__, k, rank) ;
-    if ( rank == A.matrix.size2 ) {
+	  "%s: trial point %d: rank=%d; ni=%d", __FUNCTION__, k, rank, ni) ;
+    if ( rank == ni+1 ) {
       g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	    "%s: adding trial point %d", __FUNCTION__, k) ;
       mop_polynomial_index(p,ni) = k ;
@@ -657,7 +608,15 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
     }
   }
 
-  if ( ni < mop_polynomial_term_number(p) ) return MOP_FAILURE ;
+  if ( ni < nterm ) {
+    /*adjust number of terms in polynomials to match number of points
+      available*/
+    g_assert_not_reached() ; /*this needs a rethink*/
+    mop_polynomial_term_number(p) = ni ;
+    mop_polynomial_point_number(p) = ni ;
+
+    return MOP_FAILURE ;
+  }
   
   return MOP_SUCCESS ;
 }
@@ -679,34 +638,15 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
 
 gint mop_polynomial_make(mop_polynomial_t *p, 
 			 mop_polynomial_workspace_t *w)
-
+  
 {
-  gsl_matrix_view vM, vS ;
-  gsl_vector_view vD, viD, vr ;
-  gsl_vector *iD, *D ;
-  gsl_matrix *M, *S ;
-  gint i, j, k, m, n, *pi, *pj ;
-  gsl_permutation *P ;
-  gdouble tmp ;
-
-  if ( mop_polynomial_term_number(p) > mop_polynomial_point_number(p) )
-    g_error("%s: number of monomial powers (%d) greater "
-	    "than number of points (%d)",
-	    __FUNCTION__, mop_polynomial_term_number(p),
-	    mop_polynomial_point_number(p)) ;
-
+  gdouble *M, *v ;
+  gint n, i, j, k, m, *pi, *pj, info ;
+  
   n = mop_polynomial_term_number(p) ;
 
-  vM = gsl_matrix_view_array(w->block, n, n) ;
-  vS = gsl_matrix_view_array(&(w->block[n*n]), n, n) ;
-  vD = gsl_vector_view_array(&(w->block[2*n*n]), n) ;
-  viD = gsl_vector_view_array(&(w->block[2*n*n+n]), n) ;
-  P = gsl_permutation_alloc(n) ;
-  
-  M = &(vM.matrix) ; S = &(vS.matrix) ;
-  D = &(vD.vector) ; iD = &(viD.vector) ; 
-
-  gsl_matrix_set_zero(M) ;
+  M = &(w->block[0]) ;
+  v = &(M[n*(n+1)/2]) ;
 
   block_powers(mop_polynomial_points(p),
 	       mop_polynomial_point_number(p),
@@ -714,13 +654,17 @@ gint mop_polynomial_make(mop_polynomial_t *p,
 	       mop_polynomial_order(p),
 	       p->xp) ;
 
-  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
-    pi = mop_polynomial_monomial(p, i) ;
-    for ( j = 0 ; j < mop_polynomial_term_number(p) ; j ++ ) {
-      pj = mop_polynomial_monomial(p, j) ;
-      for ( (tmp = 0.0), (m = 0) ; m < mop_polynomial_term_number(p) ; m ++ ) {
+  for ( j = 0 ; j < n ; j ++ ) {
+    pj = mop_polynomial_monomial(p, j) ;
+    for ( i = j ; i < n ; i ++ ) {
+      pi = mop_polynomial_monomial(p, i) ;
+      M[matrix_index_lower(n,i,j)] = 0.0 ;      
+      for (m = 0 ; m < mop_polynomial_term_number(p) ; m ++ ) {
 	k = mop_polynomial_index(p,m) ;
-	tmp +=
+	if ( k < 0 )
+	  g_error("%s: polynomial index (%d) out of bounds", __FUNCTION__, k) ;
+	/* fprintf(stderr, "k=%d\n", k) ; */
+	M[matrix_index_lower(n,i,j)] +=
 	  block_multipower(p->xp, k, 
 			   mop_polynomial_point_number(p), 
 			   mop_polynomial_dimension(p),
@@ -729,44 +673,23 @@ gint mop_polynomial_make(mop_polynomial_t *p,
 			   mop_polynomial_point_number(p), 
 			   mop_polynomial_dimension(p),
 			   pj)*mop_polynomial_weight(p,k) ;
-
-	if ( isnan(tmp) ) 
-	  g_error("%s: NaN error at i=%d, j=%d, k=%d", 
-		  __FUNCTION__, i, j, k) ;	     
       }
-      gsl_matrix_set(M, i, j, tmp) ;
     }
   }
+  
+  memset(p->R, 0, n*n*sizeof(gdouble)) ;
 
-  if ( sds_decomp(M, S, D, iD) != 0 ) 
-    return MOP_NO_BASIS ;
+  if ( ldl_decomp_tp(M, n, v) != 0 ) return MOP_NO_BASIS ;
 
-  gsl_permutation_init(P) ;
-  for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
-    vr = gsl_vector_view_array(&(p->R[i*mop_polynomial_term_number(p)]), 
-			       mop_polynomial_term_number(p)) ;
-    gsl_vector_set_zero(iD) ;
+  for ( i = 0 ; i < n ; i ++ ) {
     j = mop_polynomial_index(p,i) ;
-
-    if ( isnan(tmp=1.0/sqrt(mop_polynomial_weight(p,j)*gsl_vector_get(D,i))) )
-      g_error("%s: NaN error in iD, i=%d, w=%lg, D_i=%lg", 
-	      __FUNCTION__, i, mop_polynomial_weight(p,j),
-	      gsl_vector_get(D,i)) ;
-    
-    gsl_vector_set(iD, i, tmp) ;
-		   
-    gsl_linalg_LU_solve(S, P, iD, &(vr.vector)) ;
-    for ( j = 0 ; j < vr.vector.size ; j ++ ) {
-      if ( isnan(gsl_vector_get(&(vr.vector),j)) ) {
-	g_error("%s: NaN error in R, i=%d, j=%d",
-		__FUNCTION__, i, j) ;
-      }
-    }
+    p->R[i*n+i] = 1.0/sqrt(mop_polynomial_weight(p,j)*
+			   M[matrix_index_lower(n,i,i)]) ;
   }
-
-  gsl_permutation_free(P) ;
-
-  return MOP_SUCCESS ;
+  
+  dtptrs_("L", "T", "U", &n, &n, M, p->R, &n, &info) ;
+  
+  return 0 ;
 }
 
 /** 

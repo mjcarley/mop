@@ -21,7 +21,8 @@ libmop_la_SOURCES = \
 	mopblock.h \
 	mop-logging.c \
 	mop-logging.h \
-	mop.h
+	mop.h \
+	factorial.c
 
 include_HEADERS = \
 	mop.h

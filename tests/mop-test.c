@@ -100,8 +100,8 @@ gint main(gint argc, gchar **argv)
   gchar ch ;
   FILE *input ;
   
-  mop_logging_init(stderr, "", G_LOG_LEVEL_MESSAGE, NULL) ;
-  /* mop_logging_init(stderr, "", G_LOG_LEVEL_DEBUG, NULL) ; */
+  /* mop_logging_init(stderr, "", G_LOG_LEVEL_MESSAGE, NULL) ; */
+  mop_logging_init(stderr, "", G_LOG_LEVEL_DEBUG, NULL) ;
 
   verbose = TRUE ;
   tol = 1e-2 ;

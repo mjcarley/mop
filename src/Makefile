@@ -136,7 +136,8 @@ am__installdirs = "$(DESTDIR)$(libdir)" "$(DESTDIR)$(bindir)" \
 	"$(DESTDIR)$(includedir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libmop_la_LIBADD =
-am_libmop_la_OBJECTS = mop.lo interp.lo block.lo mop-logging.lo
+am_libmop_la_OBJECTS = mop.lo interp.lo block.lo mop-logging.lo \
+	factorial.lo
 libmop_la_OBJECTS = $(am_libmop_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
@@ -210,19 +211,19 @@ CTAGS = ctags
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/mop-config.in \
 	$(top_srcdir)/depcomp
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} /home/michael/Codes/C/mop/missing aclocal-1.15
+ACLOCAL = ${SHELL} /home/michael/Codes/C/MOP/missing aclocal-1.15
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
-AUTOCONF = ${SHELL} /home/michael/Codes/C/mop/missing autoconf
-AUTOHEADER = ${SHELL} /home/michael/Codes/C/mop/missing autoheader
-AUTOMAKE = ${SHELL} /home/michael/Codes/C/mop/missing automake-1.15
+AUTOCONF = ${SHELL} /home/michael/Codes/C/MOP/missing autoconf
+AUTOHEADER = ${SHELL} /home/michael/Codes/C/MOP/missing autoheader
+AUTOMAKE = ${SHELL} /home/michael/Codes/C/MOP/missing automake-1.15
 AWK = gawk
 BLASWRAP = yes
 BLAS_LIBS = -lblas
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -g -O2 -Wall -Werror-implicit-function-declaration -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include -I/usr/include
+CFLAGS = -g -O2 -Wall -Werror-implicit-function-declaration -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include
 CPP = gcc -E
 CPPFLAGS = 
 CYGPATH_W = echo
@@ -239,7 +240,7 @@ EXEEXT =
 F77 = g77
 FFLAGS = -g -O2
 FGREP = /usr/bin/grep -F
-FLIBS =  -L/usr/lib64 -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0 -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0/../../../../x86_64-slackware-linux/lib -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0/../../.. -lglib-2.0 -lgsl -lgslcblas -lgfortran -lm -lquadmath
+FLIBS =  -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0 -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0/../../../../lib64 -L/lib/../lib64 -L/usr/lib/../lib64 -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0/../../../../x86_64-slackware-linux/lib -L/usr/lib64/gcc/x86_64-slackware-linux/5.5.0/../../.. -lglib-2.0 -lgfortran -lm -lquadmath
 GLIB_CFLAGS = -pthread -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include
 GLIB_COMPILE_RESOURCES = glib-compile-resources
 GLIB_CONFIG = 
@@ -248,7 +249,6 @@ GLIB_LIBS = -lglib-2.0
 GLIB_MKENUMS = glib-mkenums
 GOBJECT_QUERY = gobject-query
 GREP = /usr/bin/grep
-GSL = yes
 INSTALL = /usr/bin/ginstall -c
 INSTALL_DATA = ${INSTALL} -m 644
 INSTALL_PROGRAM = ${INSTALL}
@@ -256,9 +256,9 @@ INSTALL_SCRIPT = ${INSTALL}
 INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 LAPACK_LIBS = 
 LD = /usr/x86_64-slackware-linux/bin/ld -m elf_x86_64
-LDFLAGS =  -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm
+LDFLAGS =  -lglib-2.0
 LIBOBJS = 
-LIBS = -lglib-2.0 -L/usr/lib64 -lgsl -lgslcblas -lm  -lblas -lm 
+LIBS = -lglib-2.0  -lblas -lm 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
@@ -269,7 +269,7 @@ LT_RELEASE = 0.1
 LT_REVISION = 0
 LT_SYS_LIBRARY_PATH = 
 MAINT = #
-MAKEINFO = ${SHELL} /home/michael/Codes/C/mop/missing makeinfo
+MAKEINFO = ${SHELL} /home/michael/Codes/C/MOP/missing makeinfo
 MANIFEST_TOOL = :
 MKDIR_P = /usr/bin/mkdir -p
 MOP_MAJOR_VERSION = 0
@@ -300,10 +300,10 @@ SET_MAKE =
 SHELL = /bin/sh
 STRIP = strip
 VERSION = 0.1
-abs_builddir = /home/michael/Codes/C/mop/src
-abs_srcdir = /home/michael/Codes/C/mop/src
-abs_top_builddir = /home/michael/Codes/C/mop
-abs_top_srcdir = /home/michael/Codes/C/mop
+abs_builddir = /home/michael/Codes/C/MOP/src
+abs_srcdir = /home/michael/Codes/C/MOP/src
+abs_top_builddir = /home/michael/Codes/C/MOP
+abs_top_srcdir = /home/michael/Codes/C/MOP
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
@@ -327,8 +327,6 @@ dvidir = ${docdir}
 exec_prefix = ${prefix}
 glib_cflags = -I/usr/include/glib-2.0 -I/usr/lib64/glib-2.0/include
 glib_libs = -lglib-2.0
-gsl_cflags = -I/usr/include
-gsl_libs = -L/usr/lib64 -lgsl -lgslcblas -lm
 host = x86_64-unknown-linux-gnu
 host_alias = 
 host_cpu = x86_64
@@ -337,7 +335,7 @@ host_vendor = unknown
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/michael/Codes/C/mop/install-sh
+install_sh = ${SHELL} /home/michael/Codes/C/MOP/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -373,7 +371,8 @@ libmop_la_SOURCES = \
 	mopblock.h \
 	mop-logging.c \
 	mop-logging.h \
-	mop.h
+	mop.h \
+	factorial.c
 
 include_HEADERS = \
 	mop.h
@@ -496,6 +495,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 include ./$(DEPDIR)/block.Plo
+include ./$(DEPDIR)/factorial.Plo
 include ./$(DEPDIR)/interp.Plo
 include ./$(DEPDIR)/mop-logging.Plo
 include ./$(DEPDIR)/mop.Plo

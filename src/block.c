@@ -24,7 +24,9 @@
 
 #include "mopblock.h"
 
-#include <gsl/gsl_specfunc.h>
+/* #include <gsl/gsl_specfunc.h> */
+
+extern const gdouble MOP_FACTORIALS[] ;
 
 gdouble block_multipower(gdouble *xp, gint i, gint n, gint dim,
 			 gint *p)
@@ -81,7 +83,9 @@ gint block_derivatives(gdouble *x, gint n,
   for ( i = 0 ; i < dim ; i ++ ) {
     for ( j = d[i] ; j <= pmax ; j ++ ) {
       for ( k = 0 ; k < n ; k ++ )
-	xp[j*n*dim+k*dim+i] *= gsl_sf_fact(j)/gsl_sf_fact(j-d[i]) ;
+	/* xp[j*n*dim+k*dim+i] *= gsl_sf_fact(j)/gsl_sf_fact(j-d[i]) ; */
+	xp[j*n*dim+k*dim+i] *=
+	  MOP_FACTORIALS[j]/MOP_FACTORIALS[j-d[i]] ;
     }
   }
 

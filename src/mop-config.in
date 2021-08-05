@@ -3,8 +3,6 @@
 
 glib_libs="@glib_libs@"
 glib_cflags="@glib_cflags@"
-gsl_libs="@gsl_libs@"
-gsl_cflags="@gsl_cflags@"
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
@@ -98,7 +96,7 @@ if test "$echo_exec_prefix" = "yes"; then
 	echo $exec_prefix
 fi
 if test "$echo_cflags" = "yes"; then
-	glib_cflags="$glib_cflags $gsl_cflags -I${prefix}/include"
+	glib_cflags="$glib_cflags -I${prefix}/include"
 	glib_cflags=`uniquify "$glib_cflags"`
 	echo $glib_cflags
 fi
