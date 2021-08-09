@@ -422,7 +422,8 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
   gdouble *powers, *A ;
   gchar mns[32] ;
 
-  g_assert(mop_polynomial_point_number(p) < mop_polynomial_term_number_max(p)) ;
+  g_assert(mop_polynomial_point_number(p) <=
+	   mop_polynomial_term_number_max(p)) ;
   
   if ( mop_polynomial_order_max(p) < order )
     g_error("%s: order too high (%d) for polynomial (maximum order %d)", 
@@ -528,7 +529,7 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
 				 gdouble tol, mop_polynomial_workspace_t *w)
 
 {
-  gint i, j, k, rank, ni, offset, npts, nterm ;
+  gint i, j, k, rank, ni, offset, npts, nterm, nr, nc ;
   gdouble *powers, *A ;
 
   if ( mop_polynomial_order_max(p) < order )
@@ -574,25 +575,48 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
   mop_polynomial_index(p,0) = 0 ; ni = 1 ;
 
   for ( k = 1 ; (k < npts) &&  (ni < nterm) ; k ++ ) {
-    A = w->block ; /*A is size (ni+1)*nterm and FORTRAN indexed*/
+    /* nr = nterm ; nc = ni+1 ; */
+    nr = ni+1 ; nc = ni+1 ;
+    A = w->block ; /*A is size nterm*(ni+1) and FORTRAN indexed*/
     for ( i = 0 ; i < ni ; i ++ ) {
-      for ( j = 0 ; j < nterm ; j ++ ) {
-	A[j*(ni+1)+i] = 
+      for ( j = 0 ; j < nc ; j ++ ) {
+      /* for ( j = 0 ; j < ni+1 ; j ++ ) { */
+	/* A[i*nterm+j] = */
+	/* A[i*(ni+1)+j] = */
+	A[j*nr+i] =
 	  block_multipower(powers, mop_polynomial_index(p,i),
 			   npts,
 			   mop_polynomial_dimension(p),
 			   mop_polynomial_monomial(p,j)) ;
       }
     }
-    for ( j = 0 ; j < nterm ; j ++ ) {
-      A[j*(ni+1)+i] = 
+    for ( j = 0 ; j < nc ; j ++ ) {
+    /* for ( j = 0 ; j < ni+1 ; j ++ ) { */
+      /* A[ni*nterm+j] = */
+      /* A[ni*(ni+1)+j] = */
+      A[j*nr+ni] =
 	block_multipower(powers, k,
 			 npts,
 			 mop_polynomial_dimension(p),
 			 mop_polynomial_monomial(p,j)) ;
     }
+
+    if ( 0 ) {
+      gint ii, jj ;
+      fprintf(stdout, "A%d = [\n", k) ;
+      for ( ii = 0 ; ii < nr ; ii ++ ) {
+    	for ( jj = 0 ; jj < nc ; jj ++ ) {
+    	  fprintf(stdout, "%1.16e ", A[jj*nr+ii]) ;
+    	}
+	fprintf(stdout, "; \n") ;
+      }
+      fprintf(stdout, "] ; \n") ;
+    }
+    
     gdouble work[1024] ;
-    rank = matrix_rank_svd(A, nterm, ni+1, nterm, tol, work, 1024) ;
+    /* rank = matrix_rank_svd(A, ni+1, ni+1, ni+1, tol, work, 1024) ; */
+    /* rank = matrix_rank_svd(A, ni+1, nterm, ni+1, tol, work, 1024) ; */
+    rank = matrix_rank_svd(A, nr, nc, nr, tol, work, 1024) ;
 
     g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	  "%s: trial point %d: rank=%d; ni=%d", __FUNCTION__, k, rank, ni) ;
@@ -611,9 +635,9 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
   if ( ni < nterm ) {
     /*adjust number of terms in polynomials to match number of points
       available*/
-    g_assert_not_reached() ; /*this needs a rethink*/
+    /* g_assert_not_reached() ; /\*this needs a rethink*\/ */
     mop_polynomial_term_number(p) = ni ;
-    mop_polynomial_point_number(p) = ni ;
+    /* mop_polynomial_point_number(p) = ni ; */
 
     return MOP_FAILURE ;
   }
@@ -658,7 +682,7 @@ gint mop_polynomial_make(mop_polynomial_t *p,
     pj = mop_polynomial_monomial(p, j) ;
     for ( i = j ; i < n ; i ++ ) {
       pi = mop_polynomial_monomial(p, i) ;
-      M[matrix_index_lower(n,i,j)] = 0.0 ;      
+      M[matrix_index_lower(n,i,j)] = 0.0 ;
       for (m = 0 ; m < mop_polynomial_term_number(p) ; m ++ ) {
 	k = mop_polynomial_index(p,m) ;
 	if ( k < 0 )
