@@ -122,6 +122,45 @@ static gint matrix_rank_svd(gdouble *A, gint m, gint n, gint lda,
   return rank ;
 }
 
+static gint monomial_matrix(gdouble *X, gint nr, gint nc,
+			    gdouble *powers, gint *p, gint npts,
+			    gint d, gint *monomials, gboolean trans)
+
+/*
+ * generate matrix X with X_{ij} = x_{i}^p_{j} in FORTRAN ordering (if
+ * !trans)
+ *
+ * powers: powers of individual components of points
+ * p:      indices of points to use
+ * npts:   number of points in block (not number of rows)
+ * d:      dimension of problems
+ * monomials: monomial powers
+ */
+  
+{
+  gint i, j ;
+
+  if ( !trans ) {
+    for ( i = 0 ; i < nr ; i ++ ) {
+      for ( j = 0 ; j < nc ; j ++ ) {
+	X[j*nr+i] =
+	  block_multipower(powers, p[i], npts, d, &(monomials[d*j])) ;
+      }
+    }    
+    
+    return 0 ;
+  }
+
+  for ( i = 0 ; i < nr ; i ++ ) {
+    for ( j = 0 ; j < nc ; j ++ ) {
+      X[j*nr+i] =
+	block_multipower(powers, p[j], npts, d, &(monomials[d*i])) ;
+    }
+  }    
+
+    return 0 ;
+}
+
 static gint make_index_list(gint n, gint m, gint *id, gint *ni)
 
 {
@@ -421,7 +460,10 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
   gint i, j, k, rank, ni, *mon, offset, np, nt ;
   gdouble *powers, *A ;
   gchar mns[32] ;
+  static gint calls = 0 ;
 
+  calls ++ ;
+  
   g_assert(mop_polynomial_point_number(p) <=
 	   mop_polynomial_term_number_max(p)) ;
   
@@ -463,26 +505,21 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
   for ( i = 0 ; i < mop_polynomial_dimension(p) ; i ++ ) 
     mop_polynomial_monomial_power(p,0,i) = 0 ;
 
-  np = mop_polynomial_point_number(p) ;
-  for ( k = 1 ; k < ni ; k ++ ) {
+  np = mop_polynomial_point_number(p) ; rank = 0 ;
+  for ( k = 1 ; (k < ni) && (mop_polynomial_term_number(p) < np) ; k ++ ) {
     nt = mop_polynomial_term_number(p) ;
     A = w->block ; /*A is size (nt+1)*np and FORTRAN indexed*/
-    for ( i = 0 ; i < mop_polynomial_term_number(p) ; i ++ ) {
-      for ( j = 0 ; j < mop_polynomial_point_number(p) ; j ++ ) {
-	A[j*(nt+1)+i] = 
-	  block_multipower(powers, j, 
-			   mop_polynomial_point_number(p),
-			   mop_polynomial_dimension(p), 
-			   mop_polynomial_monomial(p,i)) ;
-      }
+
+    /*put the trial monomial in the last slot in the list*/
+    for ( j = 0 ; j < mop_polynomial_dimension(p) ; j ++ ) {
+      mop_polynomial_monomial_power(p,mop_polynomial_term_number(p),j)
+	= mon[k*mop_polynomial_dimension(p)+j] ;
     }
-    for ( j = 0 ; j < mop_polynomial_point_number(p) ; j ++ ) {
-      A[j*(nt+1)+nt] =
-	block_multipower(powers, j,
-			 mop_polynomial_point_number(p),
-			 mop_polynomial_dimension(p),
-			 &(mon[k*mop_polynomial_dimension(p)])) ;
-    }
+    
+    monomial_matrix(A, nt+1, np, powers, p->perm, np, 
+		    mop_polynomial_dimension(p),
+		    mop_polynomial_monomial(p,0), TRUE) ;
+    
     gdouble work[1024] ;
     rank = matrix_rank_svd(A, nt+1, np, nt+1, tol, work, 1024) ;
     monomial_string(mns, &(mon[k*mop_polynomial_dimension(p)]),
@@ -493,10 +530,8 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
     if ( rank == nt+1 ) {
       g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
 	    "%s: adding trial monomial %d", __FUNCTION__, k) ;
-      for ( j = 0 ; j < mop_polynomial_dimension(p) ; j ++ ) {
-	mop_polynomial_monomial_power(p,mop_polynomial_term_number(p),j)
-	  = mon[k*mop_polynomial_dimension(p)+j] ;
-      }
+      /*trial monomial is already in the last slot, we just need to
+	increment the count to include it*/
       mop_polynomial_term_number(p) ++ ;
     } else {
       g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG,
@@ -506,6 +541,12 @@ gint mop_polynomial_basis_power(mop_polynomial_t *p, gint order,
 
   }
 
+  if ( rank < mop_polynomial_point_number(p) ) {
+    mop_polynomial_point_number(p) -- ;
+
+    return mop_polynomial_basis_power(p, order, tol, w) ;
+  }
+  
   for ( i = 0 ; i < mop_polynomial_point_number(p) ; i ++ ) 
     mop_polynomial_index(p,i) = i ;
   
@@ -574,6 +615,45 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
   
   mop_polynomial_index(p,0) = 0 ; ni = 1 ;
 
+  /*check rank with all the points and powers in place*/
+  /* nr = ni+1 ; nc = ni+1 ; */
+  
+  ni = nr = npts ; nc = nterm = npts ;
+  
+  for ( i = 0 ; i < ni ; i ++ ) mop_polynomial_index(p,i) = i ;
+
+  A = w->block ; /*A is size nterm*(ni+1) and FORTRAN indexed*/
+  monomial_matrix(A, nr, nc, powers, p->perm, npts, 
+		  mop_polynomial_dimension(p),
+		  mop_polynomial_monomial(p,0), FALSE) ;
+    
+  gdouble work[1024] ;
+  /* rank = matrix_rank_svd(A, ni+1, ni+1, ni+1, tol, work, 1024) ; */
+  /* rank = matrix_rank_svd(A, ni+1, nterm, ni+1, tol, work, 1024) ; */
+  rank = matrix_rank_svd(A, nr, nc, nr, tol, work, 1024) ;
+
+  if ( rank == nr ) {
+    fprintf(stderr, "%s: full rank (%d)\n", __FUNCTION__, rank) ;
+
+    return 0 ;
+  } else {
+    fprintf(stderr, "%s: rank deficient (%d)\n", __FUNCTION__, rank) ;    
+  }
+  
+  /* g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, */
+  /* 	"%s: trial point %d: rank=%d; ni=%d", __FUNCTION__, k, rank, ni) ; */
+  /* if ( rank == ni+1 ) { */
+  /*   g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, */
+  /* 	  "%s: adding trial point %d", __FUNCTION__, k) ; */
+  /*   mop_polynomial_index(p,ni) = k ; */
+  /*   ni ++ ; */
+  /* } else { */
+  /*   g_log(G_LOG_DOMAIN, G_LOG_LEVEL_DEBUG, */
+  /* 	  "%s: A rank deficient, trial point %d rejected",  */
+  /* 	  __FUNCTION__, k) ; */
+  /* } */
+  
+#if 0  
   for ( k = 1 ; (k < npts) &&  (ni < nterm) ; k ++ ) {
     /* nr = nterm ; nc = ni+1 ; */
     nr = ni+1 ; nc = ni+1 ;
@@ -641,6 +721,7 @@ gint mop_polynomial_basis_points(mop_polynomial_t *p, gint order,
 
     return MOP_FAILURE ;
   }
+#endif
   
   return MOP_SUCCESS ;
 }
@@ -666,6 +747,11 @@ gint mop_polynomial_make(mop_polynomial_t *p,
 {
   gdouble *M, *v ;
   gint n, i, j, k, m, *pi, *pj, info ;
+  static gint calls = 0 ;
+  gboolean fail ;
+  
+  calls ++ ;
+  fail = FALSE ;
   
   n = mop_polynomial_term_number(p) ;
 
@@ -712,6 +798,21 @@ gint mop_polynomial_make(mop_polynomial_t *p,
   }
   
   dtptrs_("L", "T", "U", &n, &n, M, p->R, &n, &info) ;
+
+  /*NaN check*/
+  for ( i = 0 ; i < n ; i ++ ) {
+    for ( j = 0 ; j < n ; j ++ ) {
+      if ( isnan(p->R[i*n+j]) ) {
+	fail = TRUE ;
+	g_error("%s: coefficient (%d,%d) NaN", __FUNCTION__, i, j) ;
+      }
+    }    
+  }
+
+  if ( fail ) {
+    /* for ( i = 0 ; i < mop_polynomial_point_n */
+    g_error("%s: coefficient (%d,%d) NaN", __FUNCTION__, i, j) ;
+  }
   
   return 0 ;
 }
